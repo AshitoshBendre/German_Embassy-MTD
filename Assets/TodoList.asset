@@ -13,7 +13,7 @@ MonoBehaviour:
   m_Name: TodoList
   m_EditorClassIdentifier: 
   Items:
-  - IsDone: 0
+  - IsDone: 1
     Task: Adding Repo to Git
   - IsDone: 0
     Task: 
