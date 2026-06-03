@@ -16,10 +16,4 @@ MonoBehaviour:
   - IsDone: 1
     Task: Adding Repo to Git
   - IsDone: 0
-    Task: 
-  - IsDone: 0
-    Task: 
-  - IsDone: 0
-    Task: 
-  - IsDone: 0
-    Task: 
+    Task: Planning System Design
