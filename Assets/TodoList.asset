@@ -15,5 +15,9 @@ MonoBehaviour:
   Items:
   - IsDone: 1
     Task: Adding Repo to Git
-  - IsDone: 0
+  - IsDone: 1
     Task: Planning System Design
+  - IsDone: 0
+    Task: Added Streaming Assets Structure with Dummy Data
+  - IsDone: 0
+    Task: Adding Feature to load text and img data into panels btns
