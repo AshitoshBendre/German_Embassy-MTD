@@ -1,0 +1,225 @@
+{
+  "$schema": "http://json-schema.org/draft-04/schema#",
+  "title": "ProjectData",
+  "type": "object",
+  "additionalProperties": false,
+  "properties": {
+    "projectTitle": {
+      "type": [
+        "null",
+        "string"
+      ]
+    },
+    "aboutTabData": {
+      "oneOf": [
+        {
+          "type": "null"
+        },
+        {
+          "$ref": "#/definitions/AboutTabData"
+        }
+      ]
+    },
+    "videosTabData": {
+      "oneOf": [
+        {
+          "type": "null"
+        },
+        {
+          "$ref": "#/definitions/VideosTabData"
+        }
+      ]
+    },
+    "galleryTabData": {
+      "oneOf": [
+        {
+          "type": "null"
+        },
+        {
+          "$ref": "#/definitions/GalleryTabData"
+        }
+      ]
+    },
+    "dashboardTabData": {
+      "oneOf": [
+        {
+          "type": "null"
+        },
+        {
+          "$ref": "#/definitions/DashboardTabData"
+        }
+      ]
+    },
+    "reportsTabData": {
+      "oneOf": [
+        {
+          "type": "null"
+        },
+        {
+          "$ref": "#/definitions/ReportsTabData"
+        }
+      ]
+    }
+  },
+  "definitions": {
+    "AboutTabData": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "imageURL": {
+          "type": [
+            "null",
+            "string"
+          ]
+        },
+        "factsTitle": {
+          "type": [
+            "null",
+            "string"
+          ]
+        },
+        "factsDatas": {
+          "type": [
+            "array",
+            "null"
+          ],
+          "items": {
+            "$ref": "#/definitions/FactsData"
+          }
+        }
+      }
+    },
+    "FactsData": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "leftText": {
+          "type": [
+            "null",
+            "string"
+          ]
+        },
+        "rightText": {
+          "type": [
+            "null",
+            "string"
+          ]
+        }
+      }
+    },
+    "VideosTabData": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "videoDatas": {
+          "type": [
+            "array",
+            "null"
+          ],
+          "items": {
+            "$ref": "#/definitions/VideoData"
+          }
+        }
+      }
+    },
+    "VideoData": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "videoURL": {
+          "type": [
+            "null",
+            "string"
+          ]
+        },
+        "titleText": {
+          "type": [
+            "null",
+            "string"
+          ]
+        }
+      }
+    },
+    "GalleryTabData": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "galleryDatas": {
+          "type": [
+            "array",
+            "null"
+          ],
+          "items": {
+            "$ref": "#/definitions/GalleryData"
+          }
+        }
+      }
+    },
+    "GalleryData": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "imageURL": {
+          "type": [
+            "null",
+            "string"
+          ]
+        },
+        "titleText": {
+          "type": [
+            "null",
+            "string"
+          ]
+        }
+      }
+    },
+    "DashboardTabData": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "imageVideosURLs": {
+          "type": [
+            "array",
+            "null"
+          ],
+          "items": {
+            "type": "string"
+          }
+        }
+      }
+    },
+    "ReportsTabData": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "reportDatas": {
+          "type": [
+            "array",
+            "null"
+          ],
+          "items": {
+            "$ref": "#/definitions/ReportData"
+          }
+        }
+      }
+    },
+    "ReportData": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "pdfURl": {
+          "type": [
+            "null",
+            "string"
+          ]
+        },
+        "titleText": {
+          "type": [
+            "null",
+            "string"
+          ]
+        }
+      }
+    }
+  }
+}
