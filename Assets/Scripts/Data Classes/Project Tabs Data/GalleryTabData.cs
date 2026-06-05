@@ -5,14 +5,14 @@ using System.Collections.Generic;
 public class GalleryTabData 
 {
     // Lower Rect
-    public List<GalleryData> galleryDatas {  get; set; }
+    public List<GalleryData> galleryDatas;
 }
 
 [Serializable]
 public class GalleryData
 {
-    public string imageURL { get; set; }
-    public string titleText { get; set; }
+    public string imageURL;
+    public string titleText;
 
     public bool IsInvalid() => string.IsNullOrWhiteSpace(imageURL) || string.IsNullOrWhiteSpace(titleText);
 }

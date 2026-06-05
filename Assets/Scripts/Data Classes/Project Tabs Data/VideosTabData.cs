@@ -5,14 +5,14 @@ using System.Collections.Generic;
 public class VideosTabData 
 {
     // Lower Rect
-    public List<VideoData> videoDatas {  get; set; }
+    public List<VideoData> videoDatas;
 }
 
 [Serializable]
 public class VideoData
 {
-    public string videoURL { get; set; }
-    public string titleText { get; set; }
+    public string videoURL;
+    public string titleText;
 
     public bool IsInvalid() => string.IsNullOrWhiteSpace(videoURL) || string.IsNullOrWhiteSpace(titleText);
 }

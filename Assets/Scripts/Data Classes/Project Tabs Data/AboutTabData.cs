@@ -5,18 +5,18 @@ using System.Collections.Generic;
 public class AboutTabData
 {
     // Upper Rect
-    public string imageURL {  get; set; }
+    public string imageURL;
 
     // Lower Rect
-    public string factsTitle { get; set; }
-    public List<FactsData> factsDatas { get; set; }
+    public string factsTitle;
+    public List<FactsData> factsDatas;
 }
 
 [Serializable]
 public class FactsData 
 {
-    public string leftText { get; set; }
-    public string rightText { get; set; }
+    public string leftText;
+    public string rightText;
 
     public bool IsInvalid() => string.IsNullOrWhiteSpace(leftText) || string.IsNullOrWhiteSpace(rightText);
 }

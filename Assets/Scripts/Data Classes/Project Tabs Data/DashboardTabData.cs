@@ -5,5 +5,5 @@ using System.Collections.Generic;
 public class DashboardTabData
 {
     // Lower Rect
-    public List<String> imageVideosURLs { get; set; }
+    public List<String> imageVideosURLs;
 }
