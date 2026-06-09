@@ -7,5 +7,5 @@ using System.Threading.Tasks;
 public interface IDataLoader
 {
     Task<List<PanelContext>> LoadStartupPanelsAsync();
-    Task<List<ProjectData>> LoadProjectsForPanelAsync(string panelFolderId);
+    Task<List<ProjectContext>> LoadProjectsForPanelAsync(string panelFolderId);
 }

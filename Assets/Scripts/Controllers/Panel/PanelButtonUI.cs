@@ -11,8 +11,6 @@ using UnityEngine.UI;
 
 public class PanelButtonUI : MonoBehaviour
 {
-    public static event Action<string> OnClick;
-
     [SerializeField] private Button _button;
     [SerializeField] private TMP_Text _titleText;
     [SerializeField] private Image _panelCoverImage;
@@ -28,8 +26,6 @@ public class PanelButtonUI : MonoBehaviour
         _button.onClick.RemoveAllListeners();
         _button.onClick.AddListener(() => _horizontalListBuilder?.BuildProjectList(_myFolderId));
 
-        ImageHelper.LoadAndApplyImageAsync(context.FolderId, context.Data.imageURL,_panelCoverImage);
+        ImageHelper.LoadAndApplyImageAsync(context.FolderId, context.Data.imageURL, _panelCoverImage);
     }
-
-
 }

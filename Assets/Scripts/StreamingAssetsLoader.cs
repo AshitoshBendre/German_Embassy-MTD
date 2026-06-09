@@ -36,17 +36,16 @@ public class StreamingAssetsLoader : IDataLoader
         return panels;
     }
 
-    public async Task<List<ProjectData>> LoadProjectsForPanelAsync(string panelFolderId)
+    public async Task<List<ProjectContext>> LoadProjectsForPanelAsync(string panelFolderId)
     {
-        var projects = new List<ProjectData>();
-
-        string panelPath = Path.Combine(_basePath, panelFolderId);
+        var projects = new List<ProjectContext>();
+        string panelPath = Path.Combine(Application.streamingAssetsPath, panelFolderId);
 
         if (!Directory.Exists(panelPath)) return projects;
 
         string[] projectDirectories = Directory.GetDirectories(panelPath);
 
-        foreach(string projDir  in projectDirectories)
+        foreach (string projDir in projectDirectories)
         {
             string jsonPath = Path.Combine(projDir, "projectdata.json");
 
@@ -54,7 +53,14 @@ public class StreamingAssetsLoader : IDataLoader
             {
                 string json = await File.ReadAllTextAsync(jsonPath);
                 ProjectData data = JsonUtility.FromJson<ProjectData>(json);
-                projects.Add(data);
+
+                // Package the data AND the routing paths into the Context
+                projects.Add(new ProjectContext
+                {
+                    PanelFolderId = panelFolderId,
+                    ProjectFolderId = new DirectoryInfo(projDir).Name, // Extracts the folder name (e.g., "project1")
+                    Data = data
+                });
             }
         }
         return projects;

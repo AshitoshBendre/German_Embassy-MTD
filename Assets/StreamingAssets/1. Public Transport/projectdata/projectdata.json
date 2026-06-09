@@ -2,11 +2,47 @@
     "projectTitle": "projectdata123123",
     "aboutTabData": {
         "imageURL": "",
-        "factsTitle": "",
+        "factsTitle": "Completely Verified Rubbish Facts",
         "factsDatas": [
             {
-                "leftText": "",
-                "rightText": ""
+                "leftText": "Coffee cups consumed",
+                "rightText": "9,001"
+            },
+            {
+                "leftText": "Rubber ducks on desk",
+                "rightText": "14"
+            },
+            {
+                "leftText": "Flux capacitor output",
+                "rightText": "1.21 Gigawatts"
+            },
+            {
+                "leftText": "Bugs successfully fixed",
+                "rightText": "-5"
+            },
+            {
+                "leftText": "Average sleep per night",
+                "rightText": "Undefined"
+            },
+            {
+                "leftText": "Quantum wobble frequency",
+                "rightText": "42 Hz"
+            },
+            {
+                "leftText": "Spaghetti code density",
+                "rightText": "Al dente"
+            },
+            {
+                "leftText": "Probability of rain",
+                "rightText": "Pineapple"
+            },
+            {
+                "leftText": "Velocity of unladen swallow",
+                "rightText": "Depends on origin"
+            },
+            {
+                "leftText": "Amount of rubbish generated",
+                "rightText": "100%"
             }
         ]
     },

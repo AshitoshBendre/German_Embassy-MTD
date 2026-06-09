@@ -7,33 +7,30 @@ public class HorizontalListBuilder : MonoBehaviour
 {
     [SerializeField] private Transform _contentContainer;
     [SerializeField] private ProjectCardUI _projectCardPrefab;
+    [SerializeField] private ProjectDisplayManager _projectDisplayManager;
 
     private IDataLoader _loader;
 
     private void Awake()
     {
         _loader = new StreamingAssetsLoader();
-
-        PanelButtonUI.OnClick += BuildProjectList;
-    }
-    private void OnDestroy()
-    {
-        PanelButtonUI.OnClick -= BuildProjectList;
     }
     public async void BuildProjectList(string folderID)
     {
+        /// For Testing Only
+        this.gameObject.SetActive(true);
+
         // Clearing any old Content
         foreach(Transform child in _contentContainer)
         {
             Destroy(child.gameObject);
         }
+        List<ProjectContext> projectContexts = await _loader.LoadProjectsForPanelAsync(folderID);
 
-        List<ProjectData> projects = await _loader.LoadProjectsForPanelAsync(folderID);
-
-        foreach(ProjectData project in projects)
+        foreach (ProjectContext project in projectContexts)
         {
             ProjectCardUI card = Instantiate(_projectCardPrefab, _contentContainer);
-            card.Initialize(project);
+            card.Initialize(project, _projectDisplayManager);
         }
     }
 }

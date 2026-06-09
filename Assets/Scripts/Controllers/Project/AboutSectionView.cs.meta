@@ -1,0 +1,15 @@
+fileFormatVersion: 2
+guid: 609c8af06f7b99341a58ae24b355e605
+MonoImporter:
+  externalObjects: {}
+  serializedVersion: 2
+  defaultReferences:
+  - _aboutCoverImage: {instanceID: 0}
+  - _factsTitleText: {instanceID: 0}
+  - _factsContainer: {instanceID: 0}
+  - _factRowPrefab: {fileID: 8341805376108491259, guid: 076955f79a0146d45a77df04f8a3cda6, type: 3}
+  executionOrder: 0
+  icon: {instanceID: 0}
+  userData: 
+  assetBundleName: 
+  assetBundleVariant: 

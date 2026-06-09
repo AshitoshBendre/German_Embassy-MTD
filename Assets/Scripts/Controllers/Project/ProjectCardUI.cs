@@ -1,24 +1,26 @@
-using System;
-using System.Collections;
-using System.Collections.Generic;
 using TMPro;
 using UnityEngine;
 using UnityEngine.UI;
 
 public class ProjectCardUI : MonoBehaviour
 {
-    public static event Action<ProjectData> OnClick;
-
     [SerializeField] private Button _button;
     [SerializeField] private TMP_Text _titleText;
 
-    private ProjectData _projectData;
+    private ProjectContext _projectContext;
 
-    public void Initialize(ProjectData data)
+    public void Initialize(ProjectContext context, ProjectDisplayManager projectDisplayManager)
     {
-        _projectData = data;
-        _titleText.text = data.projectTitle;
+        _projectContext = context;
+        _titleText.text = context.Data.projectTitle;
+
         _button.onClick.RemoveAllListeners();
-        _button.onClick.AddListener(() => OnClick?.Invoke(_projectData));
+
+        // Pass the full context upward when clicked so the manager knows the folder paths for images
+        _button.onClick.AddListener(() =>
+        {
+            projectDisplayManager?.LoadProjectContent(_projectContext);
+
+        });
     }
 }
