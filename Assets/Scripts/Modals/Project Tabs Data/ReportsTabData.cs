@@ -5,6 +5,7 @@ public class ReportsTabData
 {
     // Lower Rect
     public List<ReportData> reportDatas;
+    public float idleTimeout = 10f;
 }
 
 [Serializable]

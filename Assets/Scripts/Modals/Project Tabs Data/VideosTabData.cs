@@ -6,6 +6,7 @@ public class VideosTabData
 {
     // Lower Rect
     public List<VideoData> videoDatas;
+    public float idleTimeout = 2f;
 }
 
 [Serializable]
