@@ -14,10 +14,14 @@ public class ProjectDisplayManager : MonoBehaviour
     [SerializeField] private AboutSectionView _aboutSection;
     [SerializeField] private GallerySectionView _gallerSection;
     // [SerializeField] private VideoSectionView _videoSection;
-    // [SerializeField] private GallerySectionView _gallerySection;
 
     private IProjectSectionView _currentActiveView;
     private ProjectContext projectContext;
+
+    private void Awake()
+    {
+        HideAllViewPanels();
+    }
     public void LoadProjectContent(ProjectContext context)
     {
         projectContext = context;
@@ -27,6 +31,14 @@ public class ProjectDisplayManager : MonoBehaviour
         SwitchToView(_aboutSection);
     }
 
+
+    private void HideAllViewPanels()
+    {
+        foreach (var panel in allPanels)
+        {
+            panel.SetActive(false);
+        }
+    }
     private void SwitchToView(IProjectSectionView newView)
     {
         foreach(var panel in allPanels)
