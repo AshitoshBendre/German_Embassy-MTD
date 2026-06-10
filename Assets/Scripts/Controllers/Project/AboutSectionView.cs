@@ -22,7 +22,7 @@ public class AboutSectionView : MonoBehaviour, IProjectSectionView
 
         if (!string.IsNullOrWhiteSpace(aboutData.imageURL))
         {
-            string fullFolderPath = $"{context.ProjectFolderId}/{context.ProjectFolderId}";
+            string fullFolderPath = $"{context.PanelFolderId}/{context.ProjectFolderId}";
             ImageHelper.LoadAndApplyImageAsync(fullFolderPath, aboutData.imageURL, _aboutCoverImage);
         }
 

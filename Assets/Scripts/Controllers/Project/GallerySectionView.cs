@@ -41,7 +41,7 @@ public class GallerySectionView : MonoBehaviour, IProjectSectionView
             Helpers.ImageHelper.LoadAndApplyImageAsync(fullFolderPath, data[i].imageURL, img);
             imgObj.transform.SetParent(gridcontentContainer);
 
-            if(i== 1)
+            if(i== 0)
             {
                 imgBtn.OnClick();
             }
