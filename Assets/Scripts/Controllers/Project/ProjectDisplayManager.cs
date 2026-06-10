@@ -12,26 +12,47 @@ public class ProjectDisplayManager : MonoBehaviour
 
     [Header("View References")]
     [SerializeField] private AboutSectionView _aboutSection;
+    [SerializeField] private GallerySectionView _gallerSection;
     // [SerializeField] private VideoSectionView _videoSection;
     // [SerializeField] private GallerySectionView _gallerySection;
 
     private IProjectSectionView _currentActiveView;
-
+    private ProjectContext projectContext;
     public void LoadProjectContent(ProjectContext context)
     {
+        projectContext = context;
         _projectTitle.text = context.Data.projectTitle;
 
         _aboutSection.Initialize(context);
         SwitchToView(_aboutSection);
     }
 
-    public void SwitchToView(IProjectSectionView newView)
+    private void SwitchToView(IProjectSectionView newView)
     {
         foreach(var panel in allPanels)
         {
             panel.SetActive(false);
         }
         _currentActiveView = newView;
+        _currentActiveView.Initialize(projectContext);
         _currentActiveView.ShowUI();
+    }
+
+
+    public void SwitchProjectSectionView(int index)
+    {
+        switch (index)
+        {
+            case 0:
+                {
+                    SwitchToView(_aboutSection);
+                    break;
+                }
+            case 1:
+                {
+                    SwitchToView(_gallerSection);
+                    break;
+                }
+        }
     }
 }

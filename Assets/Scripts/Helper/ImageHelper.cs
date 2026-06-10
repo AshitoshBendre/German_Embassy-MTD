@@ -23,7 +23,7 @@ namespace Helpers
 
                 if (uwr.result != UnityWebRequest.Result.Success)
                 {
-                    Debug.LogError("Failed to load image");
+                    Debug.LogError("Failed to load image"+ folderId+" "+ imageURL);
                     return;
                 }
 

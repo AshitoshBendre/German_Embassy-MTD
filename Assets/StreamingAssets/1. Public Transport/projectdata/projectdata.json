@@ -1,5 +1,5 @@
 {
-    "projectTitle": "projectdata123123",
+    "projectTitle": "projectdataeeeee",
     "aboutTabData": {
         "imageURL": "",
         "factsTitle": "Completely Verified Rubbish Facts",
@@ -57,8 +57,64 @@
     "galleryTabData": {
         "galleryDatas": [
             {
-                "imageURL": "",
-                "titleText": ""
+                "imageURL": "Gallery/image_1.jpg",
+                "titleText": "Project Overview"
+            },
+            {
+                "imageURL": "Gallery/image_2.jpg",
+                "titleText": "System Architecture"
+            },
+            {
+                "imageURL": "Gallery/image_3.jpg",
+                "titleText": "User Interface Design"
+            },
+            {
+                "imageURL": "Gallery/image_4.jpg",
+                "titleText": "Dashboard Analytics"
+            },
+            {
+                "imageURL": "Gallery/image_5.jpg",
+                "titleText": "Data Visualization"
+            },
+            {
+                "imageURL": "Gallery/image_6.jpg",
+                "titleText": "Interactive Experience"
+            },
+            {
+                "imageURL": "Gallery/image_7.jpg",
+                "titleText": "Feature Demonstration"
+            },
+            {
+                "imageURL": "Gallery/image_8.jpg",
+                "titleText": "Performance Metrics"
+            },
+            {
+                "imageURL": "Gallery/image_9.jpg",
+                "titleText": "Research Findings"
+            },
+            {
+                "imageURL": "Gallery/image_10.jpg",
+                "titleText": "Development Process"
+            },
+            {
+                "imageURL": "Gallery/image_11.jpg",
+                "titleText": "Technical Implementation"
+            },
+            {
+                "imageURL": "Gallery/image_12.jpg",
+                "titleText": "Field Operations"
+            },
+            {
+                "imageURL": "Gallery/image_13.jpg",
+                "titleText": "Future Roadmap"
+            },
+            {
+                "imageURL": "Gallery/image_14.jpg",
+                "titleText": "Project Highlights"
+            },
+            {
+                "imageURL": "Gallery/image_15.jpg",
+                "titleText": "Final Outcomes"
             }
         ]
     },
