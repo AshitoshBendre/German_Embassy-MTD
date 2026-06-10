@@ -1,0 +1,40 @@
+{
+    "projectTitle": "TEst Puen",
+    "aboutTabData": {
+        "imageURL": "",
+        "factsTitle": "",
+        "factsDatas": [
+            {
+                "leftText": "",
+                "rightText": ""
+            }
+        ]
+    },
+    "videosTabData": {
+        "videoDatas": [
+            {
+                "videoURL": "",
+                "titleText": ""
+            }
+        ]
+    },
+    "galleryTabData": {
+        "galleryDatas": [
+            {
+                "imageURL": "",
+                "titleText": ""
+            }
+        ]
+    },
+    "dashboardTabData": {
+        "imageVideosURLs": []
+    },
+    "reportsTabData": {
+        "reportDatas": [
+            {
+                "pdfURl": "",
+                "titleText": ""
+            }
+        ]
+    }
+}
