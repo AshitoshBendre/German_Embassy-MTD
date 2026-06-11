@@ -15,8 +15,9 @@ public class HorizontalListBuilder : MonoBehaviour
     {
         _loader = new StreamingAssetsLoader();
     }
-    public async void BuildProjectList(string folderID)
+    public async void BuildProjectList(string folderID, UIManager manager)
     {
+        manager.ShowScreen(this.gameObject, true,true,true);
         /// For Testing Only
         this.gameObject.SetActive(true);
 
@@ -30,7 +31,7 @@ public class HorizontalListBuilder : MonoBehaviour
         foreach (ProjectContext project in projectContexts)
         {
             ProjectCardUI card = Instantiate(_projectCardPrefab, _contentContainer);
-            card.Initialize(project, _projectDisplayManager);
+            card.Initialize(project, _projectDisplayManager,manager);
         }
     }
 }

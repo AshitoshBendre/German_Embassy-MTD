@@ -15,6 +15,7 @@ public class PanelButtonUI : MonoBehaviour
     [SerializeField] private TMP_Text _titleText;
     [SerializeField] private Image _panelCoverImage;
     [SerializeField] private HorizontalListBuilder _horizontalListBuilder;
+    [SerializeField] private UIManager _manager;
     private string _myFolderId;
 
     public void Initialize(PanelContext context)
@@ -24,7 +25,7 @@ public class PanelButtonUI : MonoBehaviour
         _titleText.text = context.Data.titleText;
 
         _button.onClick.RemoveAllListeners();
-        _button.onClick.AddListener(() => _horizontalListBuilder?.BuildProjectList(_myFolderId));
+        _button.onClick.AddListener(() => _horizontalListBuilder?.BuildProjectList(_myFolderId,_manager));
 
         ImageHelper.LoadAndApplyImageAsync(context.FolderId, context.Data.imageURL, _panelCoverImage);
     }

@@ -81,7 +81,7 @@ public class JsonTemplateCreator : EditorWindow
                 imageURL = "",
                 aboutDatas = new()
                 {
-                    new AboutData()
+                    
                 }
                 /*factsTitle = "",
                 factsDatas = new()

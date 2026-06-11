@@ -14,6 +14,6 @@ public class ReportData
     public List<String> textData;
     public string titleText;
 
-    public bool IsInvalid() => textData.Count==0 || string.IsNullOrWhiteSpace(titleText);
+    public bool IsInvalid() => textData.Count==0  || string.IsNullOrWhiteSpace(titleText);
 
 }

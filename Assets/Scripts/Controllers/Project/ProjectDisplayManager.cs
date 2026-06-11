@@ -14,7 +14,7 @@ public class ProjectDisplayManager : MonoBehaviour
     [SerializeField] private AboutSectionView _aboutSection;
     [SerializeField] private GallerySectionView _gallerSection;
     [SerializeField] private VideoSectionView _videoSection;
-    //[SerializeField] private ReportSectionView _reportSection;
+    [SerializeField] private ReportSectionView _reportSection;
     private IProjectSectionView _currentActiveView;
     private ProjectContext projectContext;
 
@@ -22,8 +22,9 @@ public class ProjectDisplayManager : MonoBehaviour
     {
         HideAllViewPanels();
     }
-    public void LoadProjectContent(ProjectContext context)
+    public void LoadProjectContent(ProjectContext context, UIManager manager)
     {
+        manager.ShowScreen(this.gameObject, true, true, true,true);
         projectContext = context;
         _projectTitle.text = context.Data.projectTitle;
         _projectTitle.gameObject.SetActive(true);
@@ -75,7 +76,7 @@ public class ProjectDisplayManager : MonoBehaviour
                 }
             case 3:
                 {
-                    //SwitchToView(_reportSection);
+                    SwitchToView(_reportSection);
                     break;
                 }
         }
