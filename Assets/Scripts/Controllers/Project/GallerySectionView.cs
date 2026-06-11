@@ -15,6 +15,7 @@ public class GallerySectionView : MonoBehaviour, IProjectSectionView
     [SerializeField] private ImageButtonUI imageButtonPrefab;
     [SerializeField] private List<GameObject> objectsToShow;
     [SerializeField] private GameObject popupPanel;
+    [SerializeField] private GameObject TabButton;
     private ProjectContext projectContext;
 
     public void Initialize(ProjectContext context)
@@ -79,5 +80,10 @@ public class GallerySectionView : MonoBehaviour, IProjectSectionView
     public void OnUISwitch()
     {
         popupPanel.SetActive(false);
+    }
+
+    public void ValidateData(ProjectContext projectContext)
+    {
+        
     }
 }

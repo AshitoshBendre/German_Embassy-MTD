@@ -2589,6 +2589,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   textContainer: {fileID: 46393219}
   _aboutDataPrefab: {fileID: 4990530017151312221, guid: 37ba8e93750e79c41995909552060954, type: 3}
+  TabButton: {fileID: 1573318958}
   objectsToShow:
   - {fileID: 583067739}
   - {fileID: 2021485621}
@@ -4180,6 +4181,7 @@ MonoBehaviour:
   - {fileID: 591833014}
   - {fileID: 2021485621}
   popupPanel: {fileID: 1260445522}
+  TabButton: {fileID: 510395453}
 --- !u!1 &151528775
 GameObject:
   m_ObjectHideFlags: 0
@@ -5326,7 +5328,7 @@ MonoBehaviour:
   - {fileID: 591833014}
   _projectTitle: {fileID: 972661394}
   _aboutSection: {fileID: 79340617}
-  _gallerSection: {fileID: 966265105}
+  _gallerySection: {fileID: 966265105}
   _videoSection: {fileID: 150677983}
   _reportSection: {fileID: 1807165683}
 --- !u!114 &202412168
@@ -5968,6 +5970,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   textContainer: {fileID: 1582823165}
   _aboutDataPrefab: {fileID: 4990530017151312221, guid: 37ba8e93750e79c41995909552060954, type: 3}
+  TabButton: {fileID: 0}
   objectsToShow:
   - {fileID: 626394804}
   - {fileID: 127382325}
@@ -9758,6 +9761,7 @@ MonoBehaviour:
   - {fileID: 1351064947}
   - {fileID: 127382325}
   popupPanel: {fileID: 184930528}
+  TabButton: {fileID: 0}
 --- !u!224 &452797010
 RectTransform:
   m_ObjectHideFlags: 0
@@ -12209,7 +12213,7 @@ MonoBehaviour:
   - {fileID: 1351064947}
   _projectTitle: {fileID: 780886707}
   _aboutSection: {fileID: 254689678}
-  _gallerSection: {fileID: 2121593937}
+  _gallerySection: {fileID: 0}
   _videoSection: {fileID: 452797009}
   _reportSection: {fileID: 1219942537}
 --- !u!114 &595131964
@@ -14623,7 +14627,7 @@ MonoBehaviour:
   - {fileID: 632970256}
   _projectTitle: {fileID: 1409120314}
   _aboutSection: {fileID: 962553290}
-  _gallerSection: {fileID: 1520246890}
+  _gallerySection: {fileID: 0}
   _videoSection: {fileID: 735645472}
   _reportSection: {fileID: 1323866180}
 --- !u!224 &717759423
@@ -14987,6 +14991,7 @@ MonoBehaviour:
   - {fileID: 632970256}
   - {fileID: 666207741}
   popupPanel: {fileID: 970284433}
+  TabButton: {fileID: 0}
 --- !u!1 &736580112
 GameObject:
   m_ObjectHideFlags: 0
@@ -21121,6 +21126,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   textContainer: {fileID: 1135991514}
   _aboutDataPrefab: {fileID: 4990530017151312221, guid: 37ba8e93750e79c41995909552060954, type: 3}
+  TabButton: {fileID: 0}
   objectsToShow:
   - {fileID: 912749284}
   - {fileID: 666207741}
@@ -21180,6 +21186,7 @@ MonoBehaviour:
   - {fileID: 1503695448}
   - {fileID: 2021485621}
   popupPanel: {fileID: 1115695527}
+  TabButton: {fileID: 878494520}
 --- !u!1 &970284433
 GameObject:
   m_ObjectHideFlags: 0
@@ -27122,6 +27129,7 @@ MonoBehaviour:
   - {fileID: 127382325}
   - {fileID: 1951875010}
   popupPanel: {fileID: 882833365}
+  TabButton: {fileID: 0}
 --- !u!224 &1219942538
 RectTransform:
   m_ObjectHideFlags: 0
@@ -29560,6 +29568,7 @@ MonoBehaviour:
   - {fileID: 666207741}
   - {fileID: 1261970476}
   popupPanel: {fileID: 1958979737}
+  TabButton: {fileID: 0}
 --- !u!224 &1323866181
 RectTransform:
   m_ObjectHideFlags: 0
@@ -33899,6 +33908,7 @@ MonoBehaviour:
   - {fileID: 1336541050}
   - {fileID: 666207741}
   popupPanel: {fileID: 1014249792}
+  TabButton: {fileID: 0}
 --- !u!1 &1525721661
 GameObject:
   m_ObjectHideFlags: 0
@@ -40119,6 +40129,7 @@ MonoBehaviour:
   - {fileID: 2021485621}
   - {fileID: 1954029555}
   popupPanel: {fileID: 1684395611}
+  TabButton: {fileID: 1758581977}
 --- !u!1 &1815479685
 GameObject:
   m_ObjectHideFlags: 0
@@ -46510,6 +46521,7 @@ MonoBehaviour:
   - {fileID: 151528775}
   - {fileID: 127382325}
   popupPanel: {fileID: 1756529907}
+  TabButton: {fileID: 0}
 --- !u!224 &2121593938
 RectTransform:
   m_ObjectHideFlags: 0

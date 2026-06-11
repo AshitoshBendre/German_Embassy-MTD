@@ -1,3 +1,4 @@
+using Namotion.Reflection;
 using System.Collections;
 using System.Collections.Generic;
 using TMPro;
@@ -12,7 +13,7 @@ public class ProjectDisplayManager : MonoBehaviour
 
     [Header("View References")]
     [SerializeField] private AboutSectionView _aboutSection;
-    [SerializeField] private GallerySectionView _gallerSection;
+    [SerializeField] private GallerySectionView _gallerySection;
     [SerializeField] private VideoSectionView _videoSection;
     [SerializeField] private ReportSectionView _reportSection;
     private IProjectSectionView _currentActiveView;
@@ -26,6 +27,7 @@ public class ProjectDisplayManager : MonoBehaviour
     {
         manager.ShowScreen(this.gameObject, true, true, true,true);
         projectContext = context;
+        ValidateTabs();
         _projectTitle.text = context.Data.projectTitle;
         _projectTitle.gameObject.SetActive(true);
         HideAllViewPanels();
@@ -35,6 +37,13 @@ public class ProjectDisplayManager : MonoBehaviour
         //SwitchToView(_aboutSection);
     }
 
+    private void ValidateTabs()
+    {
+        _aboutSection.ValidateData(projectContext);
+        _gallerySection.ValidateData(projectContext);
+        _videoSection.ValidateData(projectContext);
+        _reportSection.ValidateData(projectContext);
+    }
 
     private void HideAllViewPanels()
     {
@@ -66,7 +75,7 @@ public class ProjectDisplayManager : MonoBehaviour
                 }
             case 1:
                 {
-                    SwitchToView(_gallerSection);
+                    SwitchToView(_gallerySection);
                     break;
                 }
             case 2:

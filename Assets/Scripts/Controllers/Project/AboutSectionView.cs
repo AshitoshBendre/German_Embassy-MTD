@@ -18,11 +18,12 @@ public class AboutSectionView : MonoBehaviour, IProjectSectionView
     //[SerializeField] private Transform _factsContainer;
     //[SerializeField] private FactRowUI _factRowPrefab;
 
+    [SerializeField] private GameObject TabButton;
     [SerializeField] private List<GameObject> objectsToShow;
     public void Initialize(ProjectContext context)
     {
         AboutTabData aboutData = context.Data.aboutTabData;
-
+        ValidateData(context);
         /*if (!string.IsNullOrWhiteSpace(aboutData.imageURL))
         {
             string fullFolderPath = $"{context.PanelFolderId}/{context.ProjectFolderId}";
@@ -86,6 +87,18 @@ public class AboutSectionView : MonoBehaviour, IProjectSectionView
         foreach(GameObject showpanel in objectsToShow)
         {
             showpanel.SetActive(true);
+        }
+    }
+
+    public void ValidateData(ProjectContext projectContext)
+    {
+        if(string.IsNullOrEmpty(projectContext.Data.aboutTabData.imageURL)||projectContext.Data.aboutTabData.aboutDatas == null)
+        {
+            TabButton.SetActive(false);
+        }
+        else
+        {
+            TabButton.SetActive(true);
         }
     }
 }

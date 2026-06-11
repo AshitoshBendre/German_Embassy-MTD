@@ -15,7 +15,7 @@ public class VideoSectionView : MonoBehaviour, IProjectSectionView
     [SerializeField] private VideoButtonUI videoButtonPrefab;
     [SerializeField] private List<GameObject> objectsToShow;
     [SerializeField] private GameObject popupPanel;
-
+    [SerializeField] private GameObject TabButton;
     private VideoManager videoManager;
     private ProjectContext projectContext;
     private string FullFolderPath;
@@ -68,5 +68,10 @@ public class VideoSectionView : MonoBehaviour, IProjectSectionView
     {
         popupPanel.SetActive(false);
         videoManager.CloseVideo();
+    }
+
+    public void ValidateData(ProjectContext projectContext)
+    {
+        
     }
 }

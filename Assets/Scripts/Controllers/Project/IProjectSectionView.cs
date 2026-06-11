@@ -6,4 +6,5 @@ public interface IProjectSectionView
     void ShowUI();
 
     void OnUISwitch();
+    void ValidateData(ProjectContext context);
 }

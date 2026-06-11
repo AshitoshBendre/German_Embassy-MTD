@@ -1,14 +1,12 @@
 {
-    "projectTitle": "projectdata123123",
+    "projectTitle": "Testing Null Remove For About",
     "aboutTabData": {
         "imageURL": "",
-        "factsTitle": "",
-        "factsDatas": [
-            {
-                "leftText": "",
-                "rightText": ""
-            }
-        ]
+        "aboutDatas": {
+            "textData": [
+                ""
+            ]
+        }
     },
     "videosTabData": {
         "videoDatas": [
@@ -16,7 +14,8 @@
                 "videoURL": "",
                 "titleText": ""
             }
-        ]
+        ],
+        "idleTimeout": 2.0
     },
     "galleryTabData": {
         "galleryDatas": [
@@ -32,7 +31,9 @@
     "reportsTabData": {
         "reportDatas": [
             {
-                "pdfURl": "",
+                "textData": [
+                    ""
+                ],
                 "titleText": ""
             }
         ]

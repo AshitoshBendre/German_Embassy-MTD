@@ -16,6 +16,7 @@ public class ReportSectionView : MonoBehaviour, IProjectSectionView
     [SerializeField] private ReportDataUI _reportDataPrefab;
     [SerializeField] private List<GameObject> objectsToShow;
     [SerializeField] private GameObject popupPanel;
+    [SerializeField] private GameObject TabButton;
     private string FullFolderPath;
 
     public void Initialize(ProjectContext context)
@@ -82,5 +83,9 @@ public class ReportSectionView : MonoBehaviour, IProjectSectionView
 
             verticalLayoutGroup.enabled = true;
         }
+    }
+
+    public void ValidateData(ProjectContext projectContext)
+    {
     }
 }
