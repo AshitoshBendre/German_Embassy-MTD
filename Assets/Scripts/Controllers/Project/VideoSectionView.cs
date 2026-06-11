@@ -14,6 +14,7 @@ public class VideoSectionView : MonoBehaviour, IProjectSectionView
     [SerializeField] private Transform videoContainer;
     [SerializeField] private VideoButtonUI videoButtonPrefab;
     [SerializeField] private List<GameObject> objectsToShow;
+    [SerializeField] private GameObject popupPanel;
 
     private VideoManager videoManager;
     private ProjectContext projectContext;
@@ -50,6 +51,7 @@ public class VideoSectionView : MonoBehaviour, IProjectSectionView
 
     public void ShowVideoOnMainRectRawImage(string videoURL, string titleText)
     {
+        popupPanel.SetActive(true);
         videoCaptions.text = titleText;
         videoManager.PlayVideo(videoURL, true);
     }
@@ -64,6 +66,7 @@ public class VideoSectionView : MonoBehaviour, IProjectSectionView
 
     public void OnUISwitch()
     {
-        throw new System.NotImplementedException();
+        popupPanel.SetActive(false);
+        videoManager.CloseVideo();
     }
 }

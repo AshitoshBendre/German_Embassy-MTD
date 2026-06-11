@@ -79,11 +79,15 @@ public class JsonTemplateCreator : EditorWindow
             aboutTabData = new AboutTabData
             {
                 imageURL = "",
-                factsTitle = "",
+                aboutDatas = new()
+                {
+                    new AboutData()
+                }
+                /*factsTitle = "",
                 factsDatas = new()
             {
                 new FactsData()
-            }
+            }*/
             },
 
             videosTabData = new VideosTabData

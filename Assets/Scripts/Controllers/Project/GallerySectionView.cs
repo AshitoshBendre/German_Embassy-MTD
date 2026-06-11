@@ -12,8 +12,9 @@ public class GallerySectionView : MonoBehaviour, IProjectSectionView
 
     [Header("Bottom Section")]
     [SerializeField] private Transform gridcontentContainer;
-
+    [SerializeField] private ImageButtonUI imageButtonPrefab;
     [SerializeField] private List<GameObject> objectsToShow;
+    [SerializeField] private GameObject popupPanel;
     private ProjectContext projectContext;
 
     public void Initialize(ProjectContext context)
@@ -32,6 +33,7 @@ public class GallerySectionView : MonoBehaviour, IProjectSectionView
         }
         for (int i = 0; i < data.Count; i++)
         {
+            /*
             var imgObj = new GameObject($"ImageButton{i}");
             imgObj.AddComponent<Button>();
             var img = imgObj.AddComponent<Image>();
@@ -40,17 +42,26 @@ public class GallerySectionView : MonoBehaviour, IProjectSectionView
             imgBtn.Initialize(this, data[i].imageURL, data[i].titleText);
             Helpers.ImageHelper.LoadAndApplyImageAsync(fullFolderPath, data[i].imageURL, img);
             imgObj.transform.SetParent(gridcontentContainer);
+            */
 
-            if(i== 0)
+            var imageObj = Instantiate(imageButtonPrefab, gridcontentContainer);
+            var imageBtnUI = imageObj.GetComponent<ImageButtonUI>();
+            string fullFolderPath = $"{projectContext.PanelFolderId}/{projectContext.ProjectFolderId}";
+            imageBtnUI.Initialize(this, data[i].imageURL, data[i].titleText, fullFolderPath);
+            //Helpers.ImageHelper.LoadAndApplyImageAsync(fullFolderPath, data[i].imageURL, img);
+
+
+            /*if(i== 0)
             {
                 imgBtn.OnClick();
-            }
+            }*/
 
         }
     }
 
     public void ShowPhotoOnMainImageRect(string imageURL, string titleText)
     {
+        popupPanel.SetActive(true);
         string fullFolderPath = $"{projectContext.PanelFolderId}/{projectContext.ProjectFolderId}";
         imagecaption.text = titleText;
         Helpers.ImageHelper.LoadAndApplyImageAsync(fullFolderPath, imageURL, imageView);
@@ -67,6 +78,6 @@ public class GallerySectionView : MonoBehaviour, IProjectSectionView
 
     public void OnUISwitch()
     {
-        throw new System.NotImplementedException();
+        popupPanel.SetActive(false);
     }
 }

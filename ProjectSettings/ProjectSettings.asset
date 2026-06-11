@@ -78,7 +78,7 @@ PlayerSettings:
   androidFullscreenMode: 1
   defaultIsNativeResolution: 1
   macRetinaSupport: 1
-  runInBackground: 0
+  runInBackground: 1
   captureSingleScreen: 0
   muteOtherAudioSources: 0
   Prepare IOS For Recording: 0
@@ -815,8 +815,8 @@ PlayerSettings:
   apiCompatibilityLevelPerPlatform: {}
   m_RenderingPath: 1
   m_MobileRenderingPath: 1
-  metroPackageName: German_Embassy MTD
-  metroPackageVersion: 
+  metroPackageName: GermanEmbassyMTD
+  metroPackageVersion: 1.0.0.0
   metroCertificatePath: 
   metroCertificatePassword: 
   metroCertificateSubject: 
@@ -824,7 +824,7 @@ PlayerSettings:
   metroCertificateNotAfter: 0000000000000000
   metroApplicationDescription: German_Embassy MTD
   wsaImages: {}
-  metroTileShortName: 
+  metroTileShortName: German_Embassy MTD
   metroTileShowName: 0
   metroMediumTileShowName: 0
   metroLargeTileShowName: 0

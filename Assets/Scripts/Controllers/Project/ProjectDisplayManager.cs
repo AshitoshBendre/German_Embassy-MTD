@@ -26,6 +26,7 @@ public class ProjectDisplayManager : MonoBehaviour
     {
         projectContext = context;
         _projectTitle.text = context.Data.projectTitle;
+        _projectTitle.gameObject.SetActive(true);
         HideAllViewPanels();
         // The Zeroth Index Should Always have Tabs List 
         allPanels[0].SetActive(true);

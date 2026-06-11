@@ -6,10 +6,16 @@ public class AboutTabData
 {
     // Upper Rect
     public string imageURL;
-
+    public List<AboutData> aboutDatas;
     // Lower Rect
-    public string factsTitle;
-    public List<FactsData> factsDatas;
+    //public string factsTitle;
+    //public List<FactsData> factsDatas;
+}
+
+[Serializable]
+public class AboutData
+{
+    public List<String> textdata;
 }
 
 [Serializable]

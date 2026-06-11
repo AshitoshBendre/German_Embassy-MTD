@@ -8,17 +8,24 @@ public class ImageButtonUI : MonoBehaviour
     private GallerySectionView sectionView;
     private string imageUrl;
     private string titleText;
+    [SerializeField] private Image image;
 
     private void Awake()
     {
+        if(image == null)
+            image = GetComponent<Image>();
         btn = GetComponent<Button>();
         btn.onClick.AddListener(OnClick);
     }
-    public void Initialize(GallerySectionView sectionView, string imageUrl, string titleText)
+    public void Initialize(GallerySectionView sectionView, string imageUrl, string titleText, string fullFolderPath)
     {
         this.sectionView = sectionView;
         this.imageUrl = imageUrl;
         this.titleText = titleText;
+
+        if(image!= null)
+            Helpers.ImageHelper.LoadAndApplyImageAsync(fullFolderPath, imageUrl, image);
+
     }
 
     public void OnClick()

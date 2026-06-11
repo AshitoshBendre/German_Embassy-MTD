@@ -26,14 +26,14 @@ public class AboutSectionView : MonoBehaviour, IProjectSectionView
             ImageHelper.LoadAndApplyImageAsync(fullFolderPath, aboutData.imageURL, _aboutCoverImage);
         }
 
-        _factsTitleText.text = aboutData.factsTitle;
+        /*_factsTitleText.text = aboutData.factsTitle;
 
         foreach(Transform child in _factsContainer)
         {
             Destroy(child.gameObject);
-        }
+        }*/
 
-        if(aboutData.factsDatas != null)
+       /* if(aboutData.factsDatas != null)
         {
             foreach(FactsData fact in aboutData.factsDatas)
             {
@@ -41,7 +41,7 @@ public class AboutSectionView : MonoBehaviour, IProjectSectionView
                 FactRowUI factRow = Instantiate(_factRowPrefab, _factsContainer);
                 factRow.Initialize(fact.leftText, fact.rightText);
             }
-        }
+        }*/
     }
 
     public void OnUISwitch()
