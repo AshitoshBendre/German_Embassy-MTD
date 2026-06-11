@@ -4,4 +4,6 @@ public interface IProjectSectionView
 {
     void Initialize(ProjectContext context);
     void ShowUI();
+
+    void OnUISwitch();
 }

@@ -44,6 +44,11 @@ public class AboutSectionView : MonoBehaviour, IProjectSectionView
         }
     }
 
+    public void OnUISwitch()
+    {
+        throw new System.NotImplementedException();
+    }
+
     public void ShowUI()
     {
         foreach(GameObject showpanel in objectsToShow)

@@ -65,4 +65,8 @@ public class GallerySectionView : MonoBehaviour, IProjectSectionView
         }
     }
 
+    public void OnUISwitch()
+    {
+        throw new System.NotImplementedException();
+    }
 }

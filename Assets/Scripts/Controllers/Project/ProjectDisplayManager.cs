@@ -13,8 +13,8 @@ public class ProjectDisplayManager : MonoBehaviour
     [Header("View References")]
     [SerializeField] private AboutSectionView _aboutSection;
     [SerializeField] private GallerySectionView _gallerSection;
-    // [SerializeField] private VideoSectionView _videoSection;
-
+    [SerializeField] private VideoSectionView _videoSection;
+    //[SerializeField] private ReportSectionView _reportSection;
     private IProjectSectionView _currentActiveView;
     private ProjectContext projectContext;
 
@@ -26,9 +26,11 @@ public class ProjectDisplayManager : MonoBehaviour
     {
         projectContext = context;
         _projectTitle.text = context.Data.projectTitle;
-
-        _aboutSection.Initialize(context);
-        SwitchToView(_aboutSection);
+        HideAllViewPanels();
+        // The Zeroth Index Should Always have Tabs List 
+        allPanels[0].SetActive(true);
+        //_aboutSection.Initialize(context);
+        //SwitchToView(_aboutSection);
     }
 
 
@@ -63,6 +65,16 @@ public class ProjectDisplayManager : MonoBehaviour
             case 1:
                 {
                     SwitchToView(_gallerSection);
+                    break;
+                }
+            case 2:
+                {
+                    SwitchToView(_videoSection);
+                    break;
+                }
+            case 3:
+                {
+                    //SwitchToView(_reportSection);
                     break;
                 }
         }
