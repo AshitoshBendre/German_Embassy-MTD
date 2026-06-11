@@ -1,14 +1,10 @@
 {
-    "projectTitle": "Test1",
+    "projectTitle": "Testing Null",
     "aboutTabData": {
         "imageURL": "",
-        "factsTitle": "",
-        "factsDatas": [
-            {
-                "leftText": "",
-                "rightText": ""
-            }
-        ]
+        "aboutDatas": {
+            "textData": []
+        }
     },
     "videosTabData": {
         "videoDatas": [
@@ -16,7 +12,8 @@
                 "videoURL": "",
                 "titleText": ""
             }
-        ]
+        ],
+        "idleTimeout": 2.0
     },
     "galleryTabData": {
         "galleryDatas": [
@@ -32,7 +29,9 @@
     "reportsTabData": {
         "reportDatas": [
             {
-                "pdfURl": "",
+                "textData": [
+                    ""
+                ],
                 "titleText": ""
             }
         ]

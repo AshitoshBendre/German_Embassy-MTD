@@ -6,7 +6,7 @@ using UnityEngine;
 public class JsonTemplateCreator : EditorWindow
 {
     private string projectName = "New Project";
-
+    
     // UI Toggles
     private bool includeAbout = true;
     private bool includeVideos = true;
@@ -23,6 +23,7 @@ public class JsonTemplateCreator : EditorWindow
     [MenuItem("Tools/Templates/Panel Data JSON")]
     public static void CreatePanelJson()
     {
+        // Requires PanelData to exist elsewhere in your project
         CreateJsonFile("paneldata.json", new PanelData
         {
             titleText = "",
@@ -39,7 +40,7 @@ public class JsonTemplateCreator : EditorWindow
     {
         targetPath = GetSelectedFolderPath();
         var window = GetWindow<JsonTemplateCreator>(true, "Create Project");
-        window.minSize = new Vector2(350, 260);
+        window.minSize = new Vector2(350, 260); 
         window.maxSize = new Vector2(350, 260);
     }
 
@@ -51,7 +52,7 @@ public class JsonTemplateCreator : EditorWindow
         projectName = EditorGUILayout.TextField("Project Name", projectName);
 
         GUILayout.Space(10);
-        EditorGUILayout.LabelField("Include Tabs (Uncheck to make null)", EditorStyles.boldLabel);
+        EditorGUILayout.LabelField("Include Tabs (Uncheck to generate empty arrays)", EditorStyles.boldLabel);
         includeAbout = EditorGUILayout.Toggle("Include About", includeAbout);
         includeVideos = EditorGUILayout.Toggle("Include Videos", includeVideos);
         includeGallery = EditorGUILayout.Toggle("Include Gallery", includeGallery);
@@ -96,83 +97,80 @@ public class JsonTemplateCreator : EditorWindow
             CopyTemplateFiles(projectFolder);
         }
 
-        // --- DUMMY DATA GENERATION LOGIC ---
+        // --- SAFE DATA GENERATION LOGIC ---
+        // Initialize everything with empty lists to prevent JsonUtility from crashing on nulls
 
-        AboutTabData aboutData = null;
+        AboutTabData aboutData = new AboutTabData { aboutDatas = new AboutData { textData = new List<string>() } };
         if (incAbout)
         {
-            aboutData = new AboutTabData
+            aboutData.imageURL = isDummy ? "Gallery/dummy_image.jpg" : "";
+            if (isDummy)
             {
-                imageURL = isDummy ? "Gallery/dummy_image.jpg" : "",
-                aboutDatas = new AboutData
-                {
-                    textData = isDummy ? new List<string>
-                    {
-                        "The projectdataeeeee initiative represents a paradigm shift in synergistic, quantum-driven computing.",
-                        "Furthermore, the core flux capacitor output has been stabilized at exactly 1.21 Gigawatts."
-                    } : new List<string> { "" }
-                }
-            };
+                aboutData.aboutDatas.textData = new List<string> 
+                { 
+                    "The projectdataeeeee initiative represents a paradigm shift in synergistic, quantum-driven computing.",
+                    "Furthermore, the core flux capacitor output has been stabilized at exactly 1.21 Gigawatts."
+                };
+            }
+            else
+            {
+                aboutData.aboutDatas.textData = new List<string> { "" };
+            }
         }
 
-        VideosTabData videosData = null;
+        VideosTabData videosData = new VideosTabData { videoDatas = new List<VideoData>() };
         if (incVideos)
         {
-            var vList = new List<VideoData>();
+            videosData.idleTimeout = 2f;
             if (isDummy)
             {
                 for (int i = 1; i <= 4; i++)
                 {
-                    vList.Add(new VideoData { videoURL = "Videos/dummy_video.mp4", titleText = $"Project Video Phase {i}" });
+                    videosData.videoDatas.Add(new VideoData { videoURL = "Videos/dummy_video.mp4", titleText = $"Project Video Phase {i}" });
                 }
             }
             else
             {
-                vList.Add(new VideoData { videoURL = "", titleText = "" });
+                videosData.videoDatas.Add(new VideoData { videoURL = "", titleText = "" });
             }
-            videosData = new VideosTabData { idleTimeout = 2f, videoDatas = vList };
         }
 
-        GalleryTabData galleryData = null;
+        GalleryTabData galleryData = new GalleryTabData { galleryDatas = new List<GalleryData>() };
         if (incGallery)
         {
-            var gList = new List<GalleryData>();
             if (isDummy)
             {
                 for (int i = 1; i <= 6; i++)
                 {
-                    gList.Add(new GalleryData { imageURL = "Gallery/dummy_image.jpg", titleText = $"Architecture Snapshot {i}" });
+                    galleryData.galleryDatas.Add(new GalleryData { imageURL = "Gallery/dummy_image.jpg", titleText = $"Architecture Snapshot {i}" });
                 }
             }
             else
             {
-                gList.Add(new GalleryData { imageURL = "", titleText = "" });
+                galleryData.galleryDatas.Add(new GalleryData { imageURL = "", titleText = "" });
             }
-            galleryData = new GalleryTabData { galleryDatas = gList };
         }
 
-        ReportsTabData reportsData = null;
+        ReportsTabData reportsData = new ReportsTabData { reportDatas = new List<ReportData>() };
         if (incReports)
         {
-            var rList = new List<ReportData>();
             if (isDummy)
             {
-                rList.Add(new ReportData
-                {
-                    titleText = "Q3 Idle Loop Automation Analysis",
+                reportsData.reportDatas.Add(new ReportData 
+                { 
+                    titleText = "Q3 Idle Loop Automation Analysis", 
                     textData = new List<string> { "Diagnostics indicate a 400% increase in virtual ingredient processing.", "Supply-chain mechanics are operating within expected parameters." }
                 });
-                rList.Add(new ReportData
-                {
-                    titleText = "Peripheral Latency Metrics",
+                reportsData.reportDatas.Add(new ReportData 
+                { 
+                    titleText = "Peripheral Latency Metrics", 
                     textData = new List<string> { "Extensive stress testing reveals zero drop in polling rates.", "Sub-millisecond response times maintained during 42 Hz quantum wobble." }
                 });
             }
             else
             {
-                rList.Add(new ReportData { titleText = "", textData = new List<string> { "" } });
+                reportsData.reportDatas.Add(new ReportData { titleText = "", textData = new List<string> { "" } });
             }
-            reportsData = new ReportsTabData { reportDatas = rList };
         }
 
         // -----------------------------------
@@ -205,41 +203,38 @@ public class JsonTemplateCreator : EditorWindow
 
     private static void CopyTemplateFiles(string projectFolder)
     {
-        // 1. Find the directory where this script resides
-        string scriptDirectory = "Assets";
-        string[] guids = AssetDatabase.FindAssets("JsonTemplateCreator t:MonoScript");
-
+        string scriptDirectory = "Assets"; 
+        string[] guids = AssetDatabase.FindAssets("JsonTemplateCreator t:Script");
+        
         if (guids.Length > 0)
         {
             string scriptPath = AssetDatabase.GUIDToAssetPath(guids[0]);
-            scriptDirectory = Path.GetDirectoryName(scriptPath);
+            scriptDirectory = Path.GetDirectoryName(scriptPath).Replace("\\", "/");
         }
 
-        // 2. Define source paths (expects files to be right next to the script)
-        string sourceImagePath = Path.Combine(scriptDirectory, "template_image.jpg");
-        string sourceVideoPath = Path.Combine(scriptDirectory, "template_video.mp4");
+        string sourceImagePath = $"{scriptDirectory}/template_image.jpg";
+        string sourceVideoPath = $"{scriptDirectory}/template_video.mp4";
 
-        // 3. Define destination paths
-        string destImagePath = Path.Combine(projectFolder, "Gallery", "dummy_image.jpg");
-        string destVideoPath = Path.Combine(projectFolder, "Videos", "dummy_video.mp4");
+        string safeProjectFolder = projectFolder.Replace("\\", "/");
+        string destImagePath = $"{safeProjectFolder}/Gallery/dummy_image.jpg";
+        string destVideoPath = $"{safeProjectFolder}/Videos/dummy_video.mp4";
 
-        // 4. Copy the files if they exist
-        if (File.Exists(sourceImagePath))
+        if (File.Exists(Path.GetFullPath(sourceImagePath)))
         {
-            File.Copy(sourceImagePath, destImagePath, true);
+            AssetDatabase.CopyAsset(sourceImagePath, destImagePath);
         }
         else
         {
-            Debug.LogWarning($"[JsonTemplateCreator] Could not find 'template_image.jpg' in {scriptDirectory}. Please place it next to the script.");
+            Debug.LogWarning($"[JsonTemplateCreator] Could not find '{sourceImagePath}'.");
         }
 
-        if (File.Exists(sourceVideoPath))
+        if (File.Exists(Path.GetFullPath(sourceVideoPath)))
         {
-            File.Copy(sourceVideoPath, destVideoPath, true);
+            AssetDatabase.CopyAsset(sourceVideoPath, destVideoPath);
         }
         else
         {
-            Debug.LogWarning($"[JsonTemplateCreator] Could not find 'template_video.mp4' in {scriptDirectory}. Please place it next to the script.");
+            Debug.LogWarning($"[JsonTemplateCreator] Could not find '{sourceVideoPath}'.");
         }
     }
 
@@ -252,12 +247,12 @@ public class JsonTemplateCreator : EditorWindow
         string selectedPath = GetSelectedFolderPath();
         string filePath = AssetDatabase.GenerateUniqueAssetPath(Path.Combine(selectedPath, defaultFileName));
         string absolutePath = Path.GetFullPath(filePath);
-
+        
         string json = JsonUtility.ToJson(data, true);
         File.WriteAllText(absolutePath, json);
-
+        
         AssetDatabase.Refresh();
-
+        
         Object asset = AssetDatabase.LoadAssetAtPath<Object>(filePath);
         EditorGUIUtility.PingObject(asset);
         Selection.activeObject = asset;
@@ -278,11 +273,4 @@ public class JsonTemplateCreator : EditorWindow
         }
         return path;
     }
-}
-
-// Dummy PanelData class assuming it exists somewhere in your project to prevent compiler errors from CreatePanelJson()
-public class PanelData
-{
-    public string titleText;
-    public string imageURL;
 }
