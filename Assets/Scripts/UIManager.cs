@@ -72,7 +72,7 @@ public class UIManager : MonoBehaviour
 
     [Tooltip("The screen shown on start. Must be a child of screensRoot.")]
     [SerializeField] private GameObject startingScreenObject;
-
+    [SerializeField] private GameObject buttonObject;
     [Header("Optional Video Controller")]
     [Tooltip("Drag a GameObject with an IVideoController component here (optional).")]
     [SerializeField] private GameObject videoControllerObject;
@@ -263,7 +263,62 @@ public class UIManager : MonoBehaviour
         ShowScreen(screen, rememberHistory, hideInstant, showInstant, instantReturnOnBack);
     }
 
-    /// <summary>
+    public void GoBack()
+    {
+        if (isTransitioning)
+            return;
+
+        // If a video is currently open, close it instead of navigating back.
+        if (videoController != null && videoController.IsVideoOpen)
+        {
+            videoController.CloseVideo();
+            return;
+        }
+
+        if (screenHistory.Count == 0)
+        {
+            Debug.Log("[UIManager] No previous screen in history.");
+            return;
+        }
+
+        // Allow current screen to react before navigating away.
+        if (currentScreen is SimpleUIScreen simpleScreen)
+        {
+            simpleScreen.OnBackNavigation();
+        }
+
+        ScreenHistoryState previousState = screenHistory.Pop();
+
+        if (previousState.Screen == null)
+        {
+            Debug.LogWarning("[UIManager] Previous screen in history was destroyed!");
+            return;
+        }
+
+        Debug.Log(
+            $"[UIManager] Going back to: {previousState.Screen.gameObject.name}");
+
+        currentScreen?.SetInteractable(false);
+
+        ShowScreen(
+            previousState.Screen,
+            rememberHistory: false,
+            hideInstant: false,
+            showInstant: previousState.InstantReturn,
+            instantReturnOnBack: false
+        );
+
+        OnGoBack?.Invoke();
+
+        if (screenHistory.Count == 0)
+        {
+            if (buttonObject != null)
+                buttonObject.SetActive(false);
+        }
+    }
+
+
+    /*/// <summary>
     /// Navigate back to the previous screen. If a video is open, closes it first.
     /// </summary>
     public void GoBack()
@@ -304,8 +359,14 @@ public class UIManager : MonoBehaviour
         );
 
         OnGoBack?.Invoke();
-    }
 
+        if(screenHistory.Count == 0)
+        {
+            if(buttonObject!= null) 
+                buttonObject.SetActive(false);
+        }
+    }
+*/
     /// <summary>
     /// Clears the entire navigation history.
     /// </summary>

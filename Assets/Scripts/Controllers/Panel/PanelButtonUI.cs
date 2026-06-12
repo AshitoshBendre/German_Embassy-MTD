@@ -24,10 +24,16 @@ public class PanelButtonUI : MonoBehaviour
 
         _titleText.text = context.Data.titleText;
 
-        _projectsButton.onClick.AddListener(() => _horizontalListBuilder?.BuildProjectList(_myFolderId, _manager));
+        //_projectsButton.onClick.AddListener(() => _horizontalListBuilder?.BuildProjectList(_myFolderId, _manager));
 
         ValidateMapButton();
         ImageHelper.LoadAndApplyImageAsync(context.FolderId, context.Data.imageURL, _panelCoverImage);
+    }
+
+    public void ClickProjectsButton()
+    {
+        //_projectsButton.onClick.AddListener(() => _horizontalListBuilder?.BuildProjectList(_myFolderId, _manager));
+        _horizontalListBuilder?.BuildProjectList(_myFolderId, _manager);
     }
 
     private void ValidateMapButton()

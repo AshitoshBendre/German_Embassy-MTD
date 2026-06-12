@@ -121,6 +121,7 @@ public class VideoManager : MonoBehaviour
         {
             StopAllCoroutines();
             action?.Invoke();
+            ClearRenderTexture();
             //StartCoroutine(FadeOutAndCleanup());
         }
     }
@@ -181,7 +182,7 @@ public class VideoManager : MonoBehaviour
             // Fallback: clear to black
             RenderTexture prev = RenderTexture.active;
             RenderTexture.active = runtimeTexture;
-            GL.Clear(true, true, Color.black);
+            GL.Clear(true, true, Color.clear);
             RenderTexture.active = prev;
         }
     }

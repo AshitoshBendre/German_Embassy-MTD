@@ -1,0 +1,67 @@
+{
+    "projectTitle": "Test 4 No Reports",
+    "aboutTabData": {
+        "imageURL": "Gallery/dummy_image.jpg",
+        "aboutDatas": {
+            "textData": [
+                "The projectdataeeeee initiative represents a paradigm shift in synergistic, quantum-driven computing.",
+                "Furthermore, the core flux capacitor output has been stabilized at exactly 1.21 Gigawatts."
+            ]
+        }
+    },
+    "videosTabData": {
+        "videoDatas": [
+            {
+                "videoURL": "Videos/dummy_video.mp4",
+                "titleText": "Project Video Phase 1"
+            },
+            {
+                "videoURL": "Videos/dummy_video.mp4",
+                "titleText": "Project Video Phase 2"
+            },
+            {
+                "videoURL": "Videos/dummy_video.mp4",
+                "titleText": "Project Video Phase 3"
+            },
+            {
+                "videoURL": "Videos/dummy_video.mp4",
+                "titleText": "Project Video Phase 4"
+            }
+        ],
+        "idleTimeout": 2.0
+    },
+    "galleryTabData": {
+        "galleryDatas": [
+            {
+                "imageURL": "Gallery/dummy_image.jpg",
+                "titleText": "Architecture Snapshot 1"
+            },
+            {
+                "imageURL": "Gallery/dummy_image.jpg",
+                "titleText": "Architecture Snapshot 2"
+            },
+            {
+                "imageURL": "Gallery/dummy_image.jpg",
+                "titleText": "Architecture Snapshot 3"
+            },
+            {
+                "imageURL": "Gallery/dummy_image.jpg",
+                "titleText": "Architecture Snapshot 4"
+            },
+            {
+                "imageURL": "Gallery/dummy_image.jpg",
+                "titleText": "Architecture Snapshot 5"
+            },
+            {
+                "imageURL": "Gallery/dummy_image.jpg",
+                "titleText": "Architecture Snapshot 6"
+            }
+        ]
+    },
+    "dashboardTabData": {
+        "imageVideosURLs": []
+    },
+    "reportsTabData": {
+        
+    }
+}
