@@ -94,7 +94,7 @@ public class VideoSectionView : MonoBehaviour, IProjectSectionView
         }
     }
 
-    public void OnUISwitch()
+    public void OnUIExit()
     {
         popupPanel.SetActive(false);
         videoManager.CloseVideo();

@@ -82,7 +82,7 @@ public class GallerySectionView : MonoBehaviour, IProjectSectionView
         }
     }
 
-    public void OnUISwitch()
+    public void OnUIExit()
     {
         popupPanel.SetActive(false);
     }

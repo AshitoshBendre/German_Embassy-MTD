@@ -100,7 +100,7 @@ public class AboutSectionView : MonoBehaviour, IProjectSectionView
             verticalLayoutGroup.enabled = true;
         }
     }
-    public void OnUISwitch()
+    public void OnUIExit()
     {
         throw new System.NotImplementedException();
     }

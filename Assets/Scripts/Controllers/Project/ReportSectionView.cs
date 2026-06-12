@@ -68,7 +68,7 @@ public class ReportSectionView : MonoBehaviour, IProjectSectionView
             $"[Report Builder] Created {createdCount} report items. Skipped {skippedCount} invalid entries.");
 
     }
-    public void OnUISwitch()
+    public void OnUIExit()
     {
         throw new System.NotImplementedException();
     }
