@@ -1,4 +1,5 @@
 ﻿
+using System;
 using System.Collections.Generic;
 using System.IO;
 using TMPro;
@@ -16,14 +17,36 @@ public class VideoSectionView : MonoBehaviour, IProjectSectionView
     [SerializeField] private List<GameObject> objectsToShow;
     [SerializeField] private GameObject popupPanel;
     [SerializeField] private GameObject TabButton;
+    [SerializeField] private float defaultIdleTimeOut = 8f;
     private VideoManager videoManager;
     private ProjectContext projectContext;
     private string FullFolderPath;
-
+    private Coroutine idleTimeoutCoroutine;
     private void Awake()
     {
         videoManager = GetComponent<VideoManager>();
     }
+
+    private void HandleOnVideoEnd()
+    {
+        if (projectContext == null)
+            return;
+
+        if (idleTimeoutCoroutine != null)
+        {
+            GlobalTimer.Stop(idleTimeoutCoroutine);
+        }
+
+        idleTimeoutCoroutine = GlobalTimer.Start(
+            (projectContext.Data.videosTabData.idleTimeout != 0f) ? projectContext.Data.videosTabData.idleTimeout : defaultIdleTimeOut,
+            () =>
+            {
+                popupPanel.SetActive(false);
+                videoManager.CloseVideo();
+                idleTimeoutCoroutine = null;
+            });
+    }
+
     public void Initialize(ProjectContext context)
     {
         projectContext = context;
@@ -83,7 +106,7 @@ public class VideoSectionView : MonoBehaviour, IProjectSectionView
     {
         popupPanel.SetActive(true);
         videoCaptions.text = titleText;
-        videoManager.PlayVideo(videoURL, true);
+        videoManager.PlayVideo(videoURL, true, HandleOnVideoEnd);
     }
 
     public void ShowUI()
@@ -96,6 +119,13 @@ public class VideoSectionView : MonoBehaviour, IProjectSectionView
 
     public void OnUIExit()
     {
+
+        if (idleTimeoutCoroutine != null)
+        {
+            GlobalTimer.Stop(idleTimeoutCoroutine);
+            idleTimeoutCoroutine = null;
+        }
+
         popupPanel.SetActive(false);
         videoManager.CloseVideo();
     }

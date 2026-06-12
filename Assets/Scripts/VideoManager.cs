@@ -3,6 +3,7 @@ using UnityEngine.Video;
 using UnityEngine.UI;
 using System.Collections;
 using System.IO;
+using System;
 [RequireComponent(typeof(VideoPlayer))]
 public class VideoManager : MonoBehaviour
 {
@@ -28,7 +29,7 @@ public class VideoManager : MonoBehaviour
 
     public bool IsPlaying { get; private set; }
     public bool IsVideoOpen => panel.activeSelf;
-
+    private event Action action;
     // ------------------------------------------------
     // LIFECYCLE
     // ------------------------------------------------
@@ -66,14 +67,14 @@ public class VideoManager : MonoBehaviour
     // PUBLIC API
     // ------------------------------------------------
 
-    public void PlayVideo(string clipPath, bool autoExit)
+    public void PlayVideo(string clipPath, bool autoExit, Action onVideoEnd)
     {
         if (string.IsNullOrEmpty(clipPath))
         {
             Debug.LogWarning("[VideoManager] PlayVideo called with empty path.");
             return;
         }
-
+        action = onVideoEnd;
         // If something is already running, stop it cleanly first
         StopAllCoroutines();
         videoPlayer.Stop();
@@ -119,7 +120,8 @@ public class VideoManager : MonoBehaviour
         if (exitOnComplete && IsVideoOpen && !isFading)
         {
             StopAllCoroutines();
-            StartCoroutine(FadeOutAndCleanup());
+            action?.Invoke();
+            //StartCoroutine(FadeOutAndCleanup());
         }
     }
 
