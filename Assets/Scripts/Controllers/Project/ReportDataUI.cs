@@ -25,8 +25,17 @@ public class ReportDataUI : MonoBehaviour
     }
     private void OnClick()
     {
-        if (data.Count ==0 || sectionView == null) return;
+        if (sectionView == null)
+        {
+            Debug.LogWarning("[ReportDataUI] SectionView is null.");
+            return;
+        }
 
+        if (data == null || data.Count == 0)
+        {
+            Debug.LogWarning("[ReportDataUI] Report data is empty.");
+            return;
+        }
         sectionView.ShowReportOnPopup(data);
     }
 }

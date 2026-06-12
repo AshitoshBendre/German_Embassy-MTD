@@ -1,5 +1,6 @@
 ﻿
 using System.Collections.Generic;
+using System.IO;
 using TMPro;
 using UnityEngine;
 using UnityEngine.UI;
@@ -45,6 +46,10 @@ public class GallerySectionView : MonoBehaviour, IProjectSectionView
             imgObj.transform.SetParent(gridcontentContainer);
             */
 
+            if (!IsGalleryDataValid( data[i]))
+                continue; 
+           
+
             var imageObj = Instantiate(imageButtonPrefab, gridcontentContainer);
             var imageBtnUI = imageObj.GetComponent<ImageButtonUI>();
             string fullFolderPath = $"{projectContext.PanelFolderId}/{projectContext.ProjectFolderId}";
@@ -84,6 +89,91 @@ public class GallerySectionView : MonoBehaviour, IProjectSectionView
 
     public void ValidateData(ProjectContext projectContext)
     {
-        
+        this.projectContext = projectContext;
+
+        bool shouldShowTab = false;
+
+        GalleryTabData galleryTabData = projectContext.Data.galleryTabData;
+
+        if (galleryTabData == null)
+        {
+            Debug.LogWarning("[Gallery Validation] GalleryTabData is NULL.");
+            TabButton.SetActive(false);
+            return;
+        }
+
+        if (galleryTabData.galleryDatas == null)
+        {
+            Debug.LogWarning("[Gallery Validation] galleryDatas list is NULL.");
+            TabButton.SetActive(false);
+            return;
+        }
+
+        if (galleryTabData.galleryDatas.Count == 0)
+        {
+            Debug.LogWarning("[Gallery Validation] galleryDatas list is empty.");
+            TabButton.SetActive(false);
+            return;
+        }
+
+        foreach (var galleryData in galleryTabData.galleryDatas)
+        {
+            if (IsGalleryDataValid(galleryData))
+            {
+                shouldShowTab = true;
+                break;
+            }
+        }
+
+        if (!shouldShowTab)
+        {
+            Debug.LogWarning(
+                $"[Gallery Validation] No valid gallery entries found for project '{projectContext.ProjectFolderId}'.");
+        }
+
+        TabButton.SetActive(shouldShowTab);
+    }
+
+    private bool IsGalleryDataValid(GalleryData galleryData)
+    {
+        if (galleryData == null)
+        {
+            Debug.LogWarning("[Gallery Validation] GalleryData entry is NULL.");
+            return false;
+        }
+
+        if (string.IsNullOrWhiteSpace(galleryData.imageURL))
+        {
+            Debug.LogWarning(
+                $"[Gallery Validation] Invalid imageURL for entry with title '{galleryData.titleText}'.");
+            return false;
+        }
+
+        if (string.IsNullOrWhiteSpace(galleryData.titleText))
+        {
+            Debug.LogWarning(
+                $"[Gallery Validation] Invalid titleText for image '{galleryData.imageURL}'.");
+            return false;
+        }
+
+        string fullFolderPath =
+            $"{projectContext.PanelFolderId}/{projectContext.ProjectFolderId}";
+
+        string imagePath = Path.Combine(
+            Application.streamingAssetsPath,
+            fullFolderPath,
+            galleryData.imageURL);
+
+        if (!File.Exists(imagePath))
+        {
+            Debug.LogWarning(
+                $"[Gallery Validation] Image file not found.\n" +
+                $"Title: {galleryData.titleText}\n" +
+                $"Image URL: {galleryData.imageURL}\n" +
+                $"Expected Path: {imagePath}");
+            return false;
+        }
+
+        return true;
     }
 }

@@ -22,8 +22,6 @@ public class AboutSectionView : MonoBehaviour, IProjectSectionView
     [SerializeField] private List<GameObject> objectsToShow;
     public void Initialize(ProjectContext context)
     {
-        AboutTabData aboutData = context.Data.aboutTabData;
-        ValidateData(context);
         /*if (!string.IsNullOrWhiteSpace(aboutData.imageURL))
         {
             string fullFolderPath = $"{context.PanelFolderId}/{context.ProjectFolderId}";
@@ -47,20 +45,45 @@ public class AboutSectionView : MonoBehaviour, IProjectSectionView
              }
          }*/
 
-        if (textContainer == null) return;
-        foreach(Transform child in textContainer)
+        if (textContainer == null)
+        {
+            Debug.LogWarning("[About Builder] Text Container is NULL.");
+            return;
+        }
+
+        foreach (Transform child in textContainer)
         {
             Destroy(child.gameObject);
         }
-        AboutData data = context.Data.aboutTabData.aboutDatas;
-        foreach (string t in data.textData)
-        {
-            var aboutObj = Instantiate(_aboutDataPrefab);
-            var dataUI = aboutObj.GetComponent<AboutDataUI>();
-            dataUI.Initialize(t);
 
-            aboutObj.transform.SetParent(textContainer);
+        AboutData aboutData = context.Data.aboutTabData?.aboutDatas;
+
+        if (aboutData?.textData == null)
+        {
+            Debug.LogWarning("[About Builder] textData is NULL.");
+            return;
         }
+        int createdCount = 0;
+        int skippedCount = 0;
+
+
+        foreach (string text in aboutData.textData)
+        {
+            if (string.IsNullOrWhiteSpace(text))
+            {
+                skippedCount++;
+                Debug.LogWarning("[About Builder] Skipping empty text entry.");
+                continue;
+            }
+
+            AboutDataUI dataUI = Instantiate(_aboutDataPrefab, textContainer);
+            dataUI.Initialize(text);
+
+            createdCount++;
+        }
+
+        Debug.Log(
+            $"[About Builder] Created {createdCount} text blocks. Skipped {skippedCount} invalid entries.");
 
         StartCoroutine(RefreshLayoutRoutine());
     }
@@ -92,13 +115,47 @@ public class AboutSectionView : MonoBehaviour, IProjectSectionView
 
     public void ValidateData(ProjectContext projectContext)
     {
-        if(string.IsNullOrEmpty(projectContext.Data.aboutTabData.imageURL)||projectContext.Data.aboutTabData.aboutDatas == null)
+        bool isValid = IsAboutDataValid(projectContext);
+
+        if (!isValid)
         {
-            TabButton.SetActive(false);
+            Debug.LogWarning(
+                $"[About Validation] About tab disabled for project '{projectContext.ProjectFolderId}'.");
         }
-        else
+
+        TabButton.SetActive(isValid);
+    }
+    private bool IsAboutDataValid(ProjectContext projectContext)
+    {
+        AboutTabData aboutTabData = projectContext.Data.aboutTabData;
+
+        if (aboutTabData == null)
         {
-            TabButton.SetActive(true);
+            Debug.LogWarning("[About Validation] AboutTabData is NULL.");
+            return false;
         }
+
+        if (aboutTabData.aboutDatas == null)
+        {
+            Debug.LogWarning("[About Validation] AboutData is NULL.");
+            return false;
+        }
+
+        if (aboutTabData.aboutDatas.textData == null)
+        {
+            Debug.LogWarning("[About Validation] textData list is NULL.");
+            return false;
+        }
+
+        foreach (string text in aboutTabData.aboutDatas.textData)
+        {
+            if (!string.IsNullOrWhiteSpace(text))
+            {
+                return true;
+            }
+        }
+
+        Debug.LogWarning("[About Validation] No valid text entries found.");
+        return false;
     }
 }

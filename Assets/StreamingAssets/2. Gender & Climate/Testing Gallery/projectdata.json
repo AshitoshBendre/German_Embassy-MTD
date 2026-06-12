@@ -1,5 +1,5 @@
 {
-    "projectTitle": "fadfasdfadsfadfadf",
+    "projectTitle": "Testing Gallery",
     "aboutTabData": {
         "imageURL": "Gallery/dummy_image.jpg",
         "aboutDatas": {
@@ -32,30 +32,7 @@
     },
     "galleryTabData": {
         "galleryDatas": [
-            {
-                "imageURL": "Gallery/dummy_image.jpg",
-                "titleText": "Architecture Snapshot 1"
-            },
-            {
-                "imageURL": "Gallery/dummy_image.jpg",
-                "titleText": "Architecture Snapshot 2"
-            },
-            {
-                "imageURL": "Gallery/dummy_image.jpg",
-                "titleText": "Architecture Snapshot 3"
-            },
-            {
-                "imageURL": "Gallery/dummy_image.jpg",
-                "titleText": "Architecture Snapshot 4"
-            },
-            {
-                "imageURL": "Gallery/dummy_image.jpg",
-                "titleText": "Architecture Snapshot 5"
-            },
-            {
-                "imageURL": "Gallery/dummy_image.jpg",
-                "titleText": "Architecture Snapshot 6"
-            }
+           
         ]
     },
     "dashboardTabData": {
