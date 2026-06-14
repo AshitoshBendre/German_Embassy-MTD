@@ -1,0 +1,31 @@
+{
+    "projectTitle": "Testing PDF",
+    "aboutTabData": {
+        "imageURL": "",
+        "aboutDatas": {
+            "textData": []
+        }
+    },
+    "videosTabData": {
+        "videoDatas": [],
+        "idleTimeout": 2.0
+    },
+    "galleryTabData": {
+        "galleryDatas": []
+    },
+    "dashboardTabData": {
+        "imageVideosURLs": []
+    },
+    "reportsTabData": {
+        "reportDatas": [
+            {
+                "pdfURL": "Reports/SamplePDF.pdf",
+                "titleText": "Q3 Idle Loop Automation Analysis"
+            },
+            {
+                "pdfURL": "Reports/SamplePDF.pdf",
+                "titleText": "Peripheral Latency Metrics"
+            }
+        ]
+    }
+}
