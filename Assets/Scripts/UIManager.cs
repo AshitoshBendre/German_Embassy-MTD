@@ -318,4 +318,61 @@ public class UIManager : MonoBehaviour
         yield return new WaitForSeconds(seconds);
         isTransitioning = false;
     }
+
+    /// <summary>
+    /// Jumps directly back to the starting screen, bypassing the back-stack,
+    /// clearing history, and resetting the title screen state.
+    /// </summary>
+    /// <param name="instant">If true, skips the screen transition animations.</param>
+    public void GoToHomeScreen(bool instant = false)
+    {
+        if (isTransitioning)
+            return;
+
+        IUIScreen homeScreen = startingScreenObject.GetComponent<IUIScreen>();
+        if (homeScreen == null)
+        {
+            Debug.LogWarning("[UIManager] Cannot go to home screen: startingScreenObject is missing or lacks IUIScreen.");
+            return;
+        }
+
+        // If we are already on the home screen and history is clear, do nothing
+        if (currentScreen == homeScreen && screenHistory.Count == 0)
+            return;
+
+        // If a video is currently open, ensure it gets closed
+        if (videoController != null && videoController.IsVideoOpen)
+        {
+            videoController.CloseVideo();
+        }
+
+        // Allow the current screen to process its back-navigation cleanup (like hiding objects)
+        if (currentScreen is SimpleUIScreen simpleScreen)
+        {
+            simpleScreen.OnBackNavigation();
+        }
+
+        // 1. Wipe the history stack clean
+        screenHistory.Clear();
+        currentScreen?.SetInteractable(false);
+
+        // 2. Transition back to the starting screen (do not add to history)
+        Debug.Log("[UIManager] Jumping directly to Home Screen.");
+        ShowScreen(
+            homeScreen,
+            rememberHistory: false,
+            hideInstant: instant,
+            showInstant: instant,
+            instantReturnOnBack: false
+        );
+
+        // 3. Reset UI States (Back button and Title Screen)
+        if (buttonObject != null)
+            buttonObject.SetActive(false);
+
+        if (TitleScreenController.Instance != null)
+        {
+            TitleScreenController.Instance.SetPanelState(titleScreenPanel, false);
+        }
+    }
 }

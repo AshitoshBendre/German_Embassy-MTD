@@ -1,5 +1,12 @@
 {
   "dependencies": {
+    "com.muratoreware.unitypdfviewer": {
+      "version": "https://github.com/kdpkke/UnityPDFViewer.git?path=etc/UnityPackage",
+      "depth": 0,
+      "source": "git",
+      "dependencies": {},
+      "hash": "f9617ffb55b733f784e27d1fac525498fe72c44c"
+    },
     "com.unity.2d.animation": {
       "version": "9.0.4",
       "depth": 1,
