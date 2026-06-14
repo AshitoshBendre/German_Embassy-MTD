@@ -45,25 +45,11 @@ public interface IVideoController
 // UIMANAGER
 // ─────────────────────────────────────────────────────────────────────────────
 
-/// <summary>
-/// Generic screen-stack UI manager. Works with any class that implements IUIScreen.
-///
-/// HOW TO ADD A SCREEN:
-///  1. Create a GameObject under the screensRoot Transform (e.g. a Canvas child).
-///  2. Attach either SimpleUIScreen (no animation) or your own MonoBehaviour
-///     that implements IUIScreen (with DOTween, LeanTween, etc.).
-///  3. That's it — UIManager finds all IUIScreen components under screensRoot on Awake.
-///  4. Assign startingScreenObject in the Inspector.
-///
-/// EXAMPLE — show a screen from anywhere:
-///     UIManager.Instance.ShowScreen(myScreenRef);
-///
-/// EXAMPLE — go back:
-///     UIManager.Instance.GoBack();
-/// </summary>
 public class UIManager : MonoBehaviour
 {
-    //public static UIManager Instance { get; private set; }
+    [Header("Title Screen Integration")]
+    [Tooltip("Which panel does this specific UIManager control?")]
+    [SerializeField] private TitleScreenPanel titleScreenPanel;
 
     [Header("Screens")]
     [Tooltip("Root Transform whose children are scanned for IUIScreen components on Awake. " +
@@ -73,6 +59,7 @@ public class UIManager : MonoBehaviour
     [Tooltip("The screen shown on start. Must be a child of screensRoot.")]
     [SerializeField] private GameObject startingScreenObject;
     [SerializeField] private GameObject buttonObject;
+
     [Header("Optional Video Controller")]
     [Tooltip("Drag a GameObject with an IVideoController component here (optional).")]
     [SerializeField] private GameObject videoControllerObject;
@@ -101,14 +88,6 @@ public class UIManager : MonoBehaviour
 
     private void Awake()
     {
-        /*if (Instance == null)
-            Instance = this;
-        else
-        {
-            Destroy(gameObject);
-            return;
-        }*/
-
         ScanScreensRoot();
 
         // Resolve optional video controller
@@ -146,10 +125,6 @@ public class UIManager : MonoBehaviour
         currentScreen.Show(instant: true);
     }
 
-    /// <summary>
-    /// Scans screensRoot (including all nested children) for IUIScreen components
-    /// and populates registeredScreens. Called once in Awake.
-    /// </summary>
     private void ScanScreensRoot()
     {
         if (screensRoot == null)
@@ -159,8 +134,6 @@ public class UIManager : MonoBehaviour
             return;
         }
 
-        // GetComponentsInChildren includes inactive GameObjects via the true flag,
-        // so screens that start hidden are still discovered.
         IUIScreen[] found = screensRoot.GetComponentsInChildren<IUIScreen>(includeInactive: true);
         registeredScreens.AddRange(found);
 
@@ -169,10 +142,6 @@ public class UIManager : MonoBehaviour
 
     // ── Public API ─────────────────────────────────────────────────────────
 
-    /// <summary>
-    /// Register a screen at runtime (useful for dynamically spawned UI
-    /// that wasn't under screensRoot at Awake time).
-    /// </summary>
     public void RegisterScreen(IUIScreen screen)
     {
         if (screen == null) return;
@@ -180,14 +149,6 @@ public class UIManager : MonoBehaviour
             registeredScreens.Add(screen);
     }
 
-    /// <summary>
-    /// Show a target screen, with optional history/transition control.
-    /// </summary>
-    /// <param name="targetScreen">The IUIScreen to navigate to.</param>
-    /// <param name="rememberHistory">Push current screen onto the back-stack.</param>
-    /// <param name="hideInstant">Hide current screen without animation.</param>
-    /// <param name="showInstant">Show target screen without animation.</param>
-    /// <param name="instantReturnOnBack">When going back to this screen, skip animation.</param>
     public void ShowScreen(
         IUIScreen targetScreen,
         bool rememberHistory = true,
@@ -211,6 +172,15 @@ public class UIManager : MonoBehaviour
 
         if (currentScreen != null && currentScreen != targetScreen)
         {
+            // We are leaving the homepage for the first time
+            if (screenHistory.Count == 0)
+            {
+                if (TitleScreenController.Instance != null)
+                {
+                    TitleScreenController.Instance.SetPanelState(titleScreenPanel, true);
+                }
+            }
+
             if (rememberHistory)
             {
                 screenHistory.Push(new ScreenHistoryState
@@ -236,10 +206,6 @@ public class UIManager : MonoBehaviour
         }
     }
 
-    /// <summary>
-    /// Convenience overload: pass a GameObject directly instead of IUIScreen.
-    /// The GameObject must have an IUIScreen component.
-    /// </summary>
     public void ShowScreen(
         GameObject targetObject,
         bool rememberHistory = true,
@@ -277,66 +243,23 @@ public class UIManager : MonoBehaviour
 
         if (screenHistory.Count == 0)
         {
-            Debug.Log("[UIManager] No previous screen in history.");
+            Debug.Log("[UIManager] Already at homepage.");
+
+            // Failsafe: Ensure the title screen knows we are at the homepage
+            if (TitleScreenController.Instance != null)
+            {
+                TitleScreenController.Instance.SetPanelState(titleScreenPanel, false);
+            }
             return;
         }
 
-        // Allow current screen to react before navigating away.
+
+
         if (currentScreen is SimpleUIScreen simpleScreen)
         {
             simpleScreen.OnBackNavigation();
         }
 
-        ScreenHistoryState previousState = screenHistory.Pop();
-
-        if (previousState.Screen == null)
-        {
-            Debug.LogWarning("[UIManager] Previous screen in history was destroyed!");
-            return;
-        }
-
-        Debug.Log(
-            $"[UIManager] Going back to: {previousState.Screen.gameObject.name}");
-
-        currentScreen?.SetInteractable(false);
-
-        ShowScreen(
-            previousState.Screen,
-            rememberHistory: false,
-            hideInstant: false,
-            showInstant: previousState.InstantReturn,
-            instantReturnOnBack: false
-        );
-
-        OnGoBack?.Invoke();
-
-        if (screenHistory.Count == 0)
-        {
-            if (buttonObject != null)
-                buttonObject.SetActive(false);
-        }
-    }
-
-
-    /*/// <summary>
-    /// Navigate back to the previous screen. If a video is open, closes it first.
-    /// </summary>
-    public void GoBack()
-    {
-        if (isTransitioning) return;
-
-        // Intercept video if present
-        if (videoController != null && videoController.IsVideoOpen)
-        {
-            videoController.CloseVideo();
-            return;
-        }
-
-        if (screenHistory.Count == 0)
-        {
-            Debug.Log("[UIManager] No previous screen in history.");
-            return;
-        }
 
         ScreenHistoryState previousState = screenHistory.Pop();
 
@@ -360,21 +283,21 @@ public class UIManager : MonoBehaviour
 
         OnGoBack?.Invoke();
 
-        if(screenHistory.Count == 0)
+        // If popping the history brought us back to the root/homepage
+        if (screenHistory.Count == 0)
         {
-            if(buttonObject!= null) 
+            if (buttonObject != null)
                 buttonObject.SetActive(false);
+
+            if (TitleScreenController.Instance != null)
+            {
+                TitleScreenController.Instance.SetPanelState(titleScreenPanel, false);
+            }
         }
     }
-*/
-    /// <summary>
-    /// Clears the entire navigation history.
-    /// </summary>
+
     public void ClearHistory() => screenHistory.Clear();
 
-    /// <summary>
-    /// How many screens are on the back-stack.
-    /// </summary>
     public int HistoryDepth => screenHistory.Count;
 
     // ── Private helpers ────────────────────────────────────────────────────
@@ -387,8 +310,6 @@ public class UIManager : MonoBehaviour
             return;
         }
 
-        // Uses a plain coroutine so there's no LeanTween dependency here.
-        // Swap for LeanTween.delayedCall / DOVirtual.DelayedCall if preferred.
         StartCoroutine(UnlockAfterDelay(delay));
     }
 
