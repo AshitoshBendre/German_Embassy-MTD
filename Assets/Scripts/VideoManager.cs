@@ -1,9 +1,10 @@
 using UnityEngine;
 using UnityEngine.Video;
 using UnityEngine.UI;
+using UnityEngine.Events;
 using System.Collections;
 using System.IO;
-using System;
+
 [RequireComponent(typeof(VideoPlayer))]
 public class VideoManager : MonoBehaviour
 {
@@ -22,6 +23,9 @@ public class VideoManager : MonoBehaviour
     [Header("Placeholder")]
     public Sprite placeholderSprite;
 
+    [Header("Events")]
+    public UnityEvent onVideoComplete;
+
     private VideoPlayer videoPlayer;
     private RenderTexture runtimeTexture;
     private bool exitOnComplete;
@@ -29,7 +33,7 @@ public class VideoManager : MonoBehaviour
 
     public bool IsPlaying { get; private set; }
     public bool IsVideoOpen => panel.activeSelf;
-    private event Action action;
+
     // ------------------------------------------------
     // LIFECYCLE
     // ------------------------------------------------
@@ -42,6 +46,7 @@ public class VideoManager : MonoBehaviour
 
         CreateRenderTexture();
         AssignTextures();
+
         // Set once here — never need to repeat in PlayVideo
         videoPlayer.skipOnDrop = true;
         videoPlayer.waitForFirstFrame = true;
@@ -67,14 +72,21 @@ public class VideoManager : MonoBehaviour
     // PUBLIC API
     // ------------------------------------------------
 
-    public void PlayVideo(string clipPath, bool autoExit, Action onVideoEnd)
+    public void PlayVideo(string clipPath, bool autoExit, UnityAction onVideoEnd = null)
     {
         if (string.IsNullOrEmpty(clipPath))
         {
             Debug.LogWarning("[VideoManager] PlayVideo called with empty path.");
             return;
         }
-        action = onVideoEnd;
+
+        // Clear previous runtime listeners to prevent stacking, but keep Inspector events intact
+        onVideoComplete.RemoveAllListeners();
+        if (onVideoEnd != null)
+        {
+            onVideoComplete.AddListener(onVideoEnd);
+        }
+
         // If something is already running, stop it cleanly first
         StopAllCoroutines();
         videoPlayer.Stop();
@@ -120,7 +132,7 @@ public class VideoManager : MonoBehaviour
         if (exitOnComplete && IsVideoOpen && !isFading)
         {
             StopAllCoroutines();
-            action?.Invoke();
+            onVideoComplete?.Invoke();
             ClearRenderTexture();
             //StartCoroutine(FadeOutAndCleanup());
         }
@@ -207,7 +219,6 @@ public class VideoManager : MonoBehaviour
     static string BuildVideoUrl(string clipPath)
     {
         string fullPath = Path.Combine(Application.streamingAssetsPath, clipPath);
-
 #if UNITY_ANDROID && !UNITY_EDITOR
         return fullPath;
 #else
