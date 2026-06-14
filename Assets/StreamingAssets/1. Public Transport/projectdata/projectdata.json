@@ -126,27 +126,12 @@
     "reportsTabData": {
         "reportDatas": [
             {
-                "titleText": "Q3 Idle Loop Automation Analysis",
+                "pdfURL": "Reports/SamplePDF.pdf",
+                "titleText": "Automation Loop Diagnostics",
                 "textData": [
                     "Recent diagnostics on the core automation loops indicate a 400% increase in virtual ingredient processing.",
                     "Supply-chain mechanics are operating within expected parameters. However, we noted a slight bottleneck in the burger management pipeline when processing speeds exceed frame rates.",
                     "Recommendation: Implement aggressive object pooling to prevent garbage collection spikes during high-intensity idle phases."
-                ]
-            },
-            {
-                "titleText": "Peripheral Latency & Hardware Metrics",
-                "textData": [
-                    "Extensive stress testing of standard input devices reveals zero drop in polling rates during extended usage.",
-                    "The integration of Cosmic Byte wired controllers proved highly resilient, maintaining sub-millisecond response times even when quantum wobble frequencies peaked at 42 Hz.",
-                    "No significant stick drift was detected across any test units during the rigorous 72-hour assessment period."
-                ]
-            },
-            {
-                "titleText": "Single-Scene Synchronization Stability",
-                "textData": [
-                    "Tests executed entirely within a single scene without the reliance on external netcode libraries yielded an unexpected 15% performance boost.",
-                    "Telemetry confirmed that purging the unnecessary zDistance variables from the primary movement scripts successfully simplified the computational load.",
-                    "The waypoint-baking process for all 100 navigation agents now executes flawlessly on initialization."
                 ]
             }
         ]

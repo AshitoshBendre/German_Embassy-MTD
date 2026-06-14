@@ -18,10 +18,12 @@ public class VideoSectionView : MonoBehaviour, IProjectSectionView
     [SerializeField] private GameObject popupPanel;
     [SerializeField] private GameObject TabButton;
     [SerializeField] private float defaultIdleTimeOut = 8f;
+    [SerializeField] private Button backButton;
     private VideoManager videoManager;
     private ProjectContext projectContext;
     private string FullFolderPath;
     private Coroutine idleTimeoutCoroutine;
+
     private void Awake()
     {
         videoManager = GetComponent<VideoManager>();
@@ -42,7 +44,7 @@ public class VideoSectionView : MonoBehaviour, IProjectSectionView
             () =>
             {
                 popupPanel.SetActive(false);
-                videoManager.CloseVideo();
+                ClosePopup();
                 idleTimeoutCoroutine = null;
             });
     }
@@ -54,7 +56,7 @@ public class VideoSectionView : MonoBehaviour, IProjectSectionView
         VideoListBuilder(context.Data.videosTabData.videoDatas);
     }
 
-    private void VideoListBuilder(List<VideoData> data)
+    /*private void VideoListBuilder(List<VideoData> data)
     {
         if (data == null)
         {
@@ -100,15 +102,126 @@ public class VideoSectionView : MonoBehaviour, IProjectSectionView
         Debug.Log(
             $"[Video Builder] Created {createdCount} video items. Skipped {skippedCount} invalid entries.");
 
+    }*/
+
+    private void VideoListBuilder(List<VideoData> data)
+    {
+        if (data == null)
+        {
+            Debug.LogWarning("[Video Builder] Data list is NULL.");
+            return;
+        }
+
+        if (data.Count == 0)
+        {
+            Debug.LogWarning("[Video Builder] Data list is empty.");
+            return;
+        }
+
+        foreach (Transform child in videoContainer)
+        {
+            Destroy(child.gameObject);
+        }
+
+        int createdCount = 0;
+        int skippedCount = 0;
+
+        foreach (var videoData in data)
+        {
+            if (!IsVideoDataValid(videoData))
+            {
+                skippedCount++;
+                continue;
+            }
+
+            var videoObj = Instantiate(videoButtonPrefab, videoContainer);
+            var videoBtnUI = videoObj.GetComponent<VideoButtonUI>();
+
+            string videoPath = Path.Combine(FullFolderPath, videoData.videoURL);
+
+            // Build absolute path for the thumbnail to load via File.ReadAllBytes
+            string absoluteThumbnailPath = Path.Combine(Application.streamingAssetsPath, FullFolderPath, videoData.thumbnailURL);
+
+            videoBtnUI.Initialize(
+                this,
+                videoPath,
+                videoData.titleText,
+                absoluteThumbnailPath); // Pass the thumbnail path
+
+            createdCount++;
+        }
+
+        Debug.Log($"[Video Builder] Created {createdCount} video items. Skipped {skippedCount} invalid entries.");
+    }
+
+    private bool IsVideoDataValid(VideoData videoData)
+    {
+        if (videoData == null)
+        {
+            Debug.LogWarning("[Video Validation] VideoData entry is NULL.");
+            return false;
+        }
+
+        if (string.IsNullOrWhiteSpace(videoData.videoURL))
+        {
+            Debug.LogWarning($"[Video Validation] Invalid videoURL for entry with title '{videoData.titleText}'.");
+            return false;
+        }
+
+        if (string.IsNullOrWhiteSpace(videoData.titleText))
+        {
+            Debug.LogWarning($"[Video Validation] Invalid titleText for video '{videoData.videoURL}'.");
+            return false;
+        }
+
+        // Added validation check for thumbnailURL
+        if (string.IsNullOrWhiteSpace(videoData.thumbnailURL))
+        {
+            Debug.LogWarning($"[Video Validation] Invalid thumbnailURL for video '{videoData.titleText}'.");
+            return false;
+        }
+
+        string fullFolderPath = $"{projectContext.PanelFolderId}/{projectContext.ProjectFolderId}";
+
+        string videoPath = Path.Combine(Application.streamingAssetsPath, fullFolderPath, videoData.videoURL);
+        string thumbnailPath = Path.Combine(Application.streamingAssetsPath, fullFolderPath, videoData.thumbnailURL);
+
+        if (!File.Exists(videoPath))
+        {
+            Debug.LogWarning($"[Video Validation] Video file not found.\nTitle: {videoData.titleText}\nExpected Path: {videoPath}");
+            return false;
+        }
+
+        // Validate thumbnail physical file exists
+        if (!File.Exists(thumbnailPath))
+        {
+            Debug.LogWarning($"[Video Validation] Thumbnail file not found.\nTitle: {videoData.titleText}\nExpected Path: {thumbnailPath}");
+            return false;
+        }
+
+        return true;
     }
 
     public void ShowVideoOnMainRectRawImage(string videoURL, string titleText)
     {
+        if (backButton != null)
+        {
+            backButton.gameObject.SetActive(false);
+        }
         popupPanel.SetActive(true);
         videoCaptions.text = titleText;
         videoManager.PlayVideo(videoURL, true, HandleOnVideoEnd);
     }
 
+    public void ClosePopup()
+    {
+        if (backButton != null)
+        {
+            backButton.gameObject.SetActive(true);
+        }
+        popupPanel.SetActive(false);
+        videoManager.CloseVideo();
+    }
     public void ShowUI()
     {
         foreach (GameObject showpanel in objectsToShow)
@@ -177,7 +290,7 @@ public class VideoSectionView : MonoBehaviour, IProjectSectionView
         TabButton.SetActive(shouldShowTab);
     }
 
-    private bool IsVideoDataValid(VideoData videoData)
+    /*private bool IsVideoDataValid(VideoData videoData)
     {
         if (videoData == null)
         {
@@ -218,5 +331,5 @@ public class VideoSectionView : MonoBehaviour, IProjectSectionView
         }
 
         return true;
-    }
+    }*/
 }

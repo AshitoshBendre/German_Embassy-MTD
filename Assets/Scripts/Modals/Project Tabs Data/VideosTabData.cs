@@ -2,7 +2,7 @@ using System;
 using System.Collections.Generic;
 
 [Serializable]
-public class VideosTabData 
+public class VideosTabData
 {
     // Lower Rect
     public List<VideoData> videoDatas;
@@ -14,6 +14,11 @@ public class VideoData
 {
     public string videoURL;
     public string titleText;
+    public string thumbnailURL; // Added thumbnail support
 
-    public bool IsInvalid() => string.IsNullOrWhiteSpace(videoURL) || string.IsNullOrWhiteSpace(titleText);
+    // Validate that all three required fields exist
+    public bool IsInvalid() =>
+        string.IsNullOrWhiteSpace(videoURL) ||
+        string.IsNullOrWhiteSpace(titleText) ||
+        string.IsNullOrWhiteSpace(thumbnailURL);
 }

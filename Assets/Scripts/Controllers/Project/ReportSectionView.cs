@@ -4,6 +4,7 @@ using System.Collections.Generic;
 using System.IO;
 using UnityEngine;
 using UnityEngine.UI;
+using UnityPdfViewer;
 
 public class ReportSectionView : MonoBehaviour, IProjectSectionView
 {
@@ -17,13 +18,24 @@ public class ReportSectionView : MonoBehaviour, IProjectSectionView
     [SerializeField] private List<GameObject> objectsToShow;
     [SerializeField] private GameObject popupPanel;
     [SerializeField] private GameObject TabButton;
+    [SerializeField] private PdfViewerUI _pdfViewerUI;
+    [SerializeField] private Button backButton;
     private string FullFolderPath;
+    private ProjectContext projectContext;
 
     public void Initialize(ProjectContext context)
     {
+        if (_pdfViewerUI == null)
+        {
+            Debug.LogError("PDF VIEWER IS NULL");
+        }
+
+        _pdfViewerUI.pathMode = PdfPathMode.RelativeToStreamingAssets;
+        projectContext = context;
         FullFolderPath = $"{context.PanelFolderId}/{context.ProjectFolderId}";
         ReportListBuilder(context.Data.reportsTabData.reportDatas);
     }
+
     private void ReportListBuilder(List<ReportData> data)
     {
         if (data == null)
@@ -54,23 +66,31 @@ public class ReportSectionView : MonoBehaviour, IProjectSectionView
                 continue;
             }
 
+            string reportPath = Path.Combine(
+                Application.streamingAssetsPath,
+                FullFolderPath,
+                reportData.pdfURL);
+
             var reportObj = Instantiate(_reportDataPrefab, listContainer);
 
+            // Passed titleText into the UI initializer
             reportObj.Initialize(
                 this,
                 reportData.titleText,
-                reportData.textData);
+                reportPath);
 
             createdCount++;
         }
 
-        Debug.Log(
-            $"[Report Builder] Created {createdCount} report items. Skipped {skippedCount} invalid entries.");
-
+        Debug.Log($"[Report Builder] Created {createdCount} report items. Skipped {skippedCount} invalid entries.");
     }
+
     public void OnUIExit()
     {
-        throw new System.NotImplementedException();
+        if (backButton != null)
+        {
+            backButton.gameObject.SetActive(true);
+        }
     }
 
     public void ShowUI()
@@ -81,9 +101,9 @@ public class ReportSectionView : MonoBehaviour, IProjectSectionView
         }
     }
 
-    internal void ShowReportOnPopup(List<string> data)
+    internal void ShowReportOnPopup(string data)
     {
-        if (data == null || data.Count == 0)
+        if (data == null || string.IsNullOrEmpty(data))
         {
             Debug.LogWarning("[Report Popup] Invalid report data.");
             return;
@@ -91,48 +111,25 @@ public class ReportSectionView : MonoBehaviour, IProjectSectionView
 
         popupPanel.SetActive(true);
 
-        foreach (Transform child in textContainer)
+        if (_pdfViewerUI == null)
         {
-            Destroy(child.gameObject);
+            Debug.LogError("PDF VIEWER IS NULL");
         }
-
-        int createdCount = 0;
-        int skippedCount = 0;
-
-        foreach (string text in data)
-        {
-            if (string.IsNullOrWhiteSpace(text))
-            {
-                skippedCount++;
-                continue;
-            }
-
-            var aboutObj = Instantiate(_aboutDataPrefab, textContainer);
-            aboutObj.Initialize(text); 
-            createdCount++;
+        if (backButton != null)
+        { 
+            backButton.gameObject.SetActive(false);
         }
-        Debug.Log(
-        $"[Report Popup] Created {createdCount} text blocks. Skipped {skippedCount} invalid entries.");
-        StartCoroutine(RefreshLayoutRoutine());
-    }
-    private IEnumerator RefreshLayoutRoutine()
-    {
-        VerticalLayoutGroup verticalLayoutGroup = textContainer.GetComponent<VerticalLayoutGroup>();
-        if (verticalLayoutGroup != null)
-        {
-            verticalLayoutGroup.enabled = false;
-
-            // Wait for unity to finish the current frame's rendering and layout
-            yield return new WaitForEndOfFrame();
-
-            verticalLayoutGroup.enabled = true;
-        }
+        _pdfViewerUI.pathMode = PdfPathMode.RelativeToStreamingAssets;
+        _pdfViewerUI.pdfPath = data;
+        _pdfViewerUI.LoadPDF();
     }
 
     public void ValidateData(ProjectContext projectContext)
     {
-        bool shouldShowTab = false;
+        Debug.Log($"<color=cyan>[Report Validation] Context received! Project Title is: {projectContext.Data.projectTitle}</color>");
 
+        bool shouldShowTab = false;
+        this.projectContext = projectContext;
         ReportsTabData reportsTabData = projectContext.Data.reportsTabData;
 
         if (reportsTabData == null)
@@ -181,35 +178,36 @@ public class ReportSectionView : MonoBehaviour, IProjectSectionView
             return false;
         }
 
+        if (string.IsNullOrWhiteSpace(reportData.pdfURL))
+        {
+            Debug.LogWarning("[Report Validation] Invalid pdfURL");
+            return false;
+        }
+
+        // Added validation check for the titleText
         if (string.IsNullOrWhiteSpace(reportData.titleText))
         {
-            Debug.LogWarning("[Report Validation] Report title is empty.");
+            Debug.LogWarning($"[Report Validation] Invalid titleText for report '{reportData.pdfURL}'.");
             return false;
         }
 
-        if (reportData.textData == null)
+        string fullFolderPath = $"{projectContext.PanelFolderId}/{projectContext.ProjectFolderId}";
+
+        string reportPath = Path.Combine(
+            Application.streamingAssetsPath,
+            fullFolderPath,
+            reportData.pdfURL);
+
+        if (!File.Exists(reportPath))
         {
             Debug.LogWarning(
-                $"[Report Validation] textData is NULL for report '{reportData.titleText}'.");
+                $"[Report Validation] PDF file not found.\n" +
+                $"Title: {reportData.titleText}\n" +
+                $"PDF URL: {reportData.pdfURL}\n" +
+                $"Expected Path: {reportPath}");
             return false;
         }
 
-        if (reportData.textData.Count == 0)
-        {
-            Debug.LogWarning(
-                $"[Report Validation] textData is empty for report '{reportData.titleText}'.");
-            return false;
-        }
-
-        foreach (string text in reportData.textData)
-        {
-            if (!string.IsNullOrWhiteSpace(text))
-                return true;
-        }
-
-        Debug.LogWarning(
-            $"[Report Validation] No valid text entries found for report '{reportData.titleText}'.");
-
-        return false;
+        return true;
     }
 }

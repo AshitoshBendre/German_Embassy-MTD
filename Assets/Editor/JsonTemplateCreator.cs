@@ -6,7 +6,7 @@ using UnityEngine;
 public class JsonTemplateCreator : EditorWindow
 {
     private string projectName = "New Project";
-    
+
     // UI Toggles
     private bool includeAbout = true;
     private bool includeVideos = true;
@@ -40,7 +40,7 @@ public class JsonTemplateCreator : EditorWindow
     {
         targetPath = GetSelectedFolderPath();
         var window = GetWindow<JsonTemplateCreator>(true, "Create Project");
-        window.minSize = new Vector2(350, 260); 
+        window.minSize = new Vector2(350, 260);
         window.maxSize = new Vector2(350, 260);
     }
 
@@ -106,8 +106,8 @@ public class JsonTemplateCreator : EditorWindow
             aboutData.imageURL = isDummy ? "Gallery/dummy_image.jpg" : "";
             if (isDummy)
             {
-                aboutData.aboutDatas.textData = new List<string> 
-                { 
+                aboutData.aboutDatas.textData = new List<string>
+                {
                     "The projectdataeeeee initiative represents a paradigm shift in synergistic, quantum-driven computing.",
                     "Furthermore, the core flux capacitor output has been stabilized at exactly 1.21 Gigawatts."
                 };
@@ -126,12 +126,22 @@ public class JsonTemplateCreator : EditorWindow
             {
                 for (int i = 1; i <= 4; i++)
                 {
-                    videosData.videoDatas.Add(new VideoData { videoURL = "Videos/dummy_video.mp4", titleText = $"Project Video Phase {i}" });
+                    videosData.videoDatas.Add(new VideoData
+                    {
+                        videoURL = "Videos/dummy_video.mp4",
+                        titleText = $"Project Video Phase {i}",
+                        thumbnailURL = "Gallery/dummy_image.jpg" // Added thumbnail support
+                    });
                 }
             }
             else
             {
-                videosData.videoDatas.Add(new VideoData { videoURL = "", titleText = "" });
+                videosData.videoDatas.Add(new VideoData
+                {
+                    videoURL = "",
+                    titleText = "",
+                    thumbnailURL = "" // Added thumbnail support
+                });
             }
         }
 
@@ -156,20 +166,20 @@ public class JsonTemplateCreator : EditorWindow
         {
             if (isDummy)
             {
-                reportsData.reportDatas.Add(new ReportData 
-                { 
-                    titleText = "Q3 Idle Loop Automation Analysis", 
-                    textData = new List<string> { "Diagnostics indicate a 400% increase in virtual ingredient processing.", "Supply-chain mechanics are operating within expected parameters." }
+                reportsData.reportDatas.Add(new ReportData
+                {
+                    pdfURL = "Reports/SamplePDF.pdf",
+                    titleText = "Q3 Idle Loop Automation Analysis"
                 });
-                reportsData.reportDatas.Add(new ReportData 
-                { 
-                    titleText = "Peripheral Latency Metrics", 
-                    textData = new List<string> { "Extensive stress testing reveals zero drop in polling rates.", "Sub-millisecond response times maintained during 42 Hz quantum wobble." }
+                reportsData.reportDatas.Add(new ReportData
+                {
+                    pdfURL = "Reports/SamplePDF.pdf",
+                    titleText = "Peripheral Latency Metrics"
                 });
             }
             else
             {
-                reportsData.reportDatas.Add(new ReportData { titleText = "", textData = new List<string> { "" } });
+                reportsData.reportDatas.Add(new ReportData { pdfURL = "", titleText = "" });
             }
         }
 
@@ -203,9 +213,9 @@ public class JsonTemplateCreator : EditorWindow
 
     private static void CopyTemplateFiles(string projectFolder)
     {
-        string scriptDirectory = "Assets"; 
+        string scriptDirectory = "Assets";
         string[] guids = AssetDatabase.FindAssets("JsonTemplateCreator t:Script");
-        
+
         if (guids.Length > 0)
         {
             string scriptPath = AssetDatabase.GUIDToAssetPath(guids[0]);
@@ -247,12 +257,12 @@ public class JsonTemplateCreator : EditorWindow
         string selectedPath = GetSelectedFolderPath();
         string filePath = AssetDatabase.GenerateUniqueAssetPath(Path.Combine(selectedPath, defaultFileName));
         string absolutePath = Path.GetFullPath(filePath);
-        
+
         string json = JsonUtility.ToJson(data, true);
         File.WriteAllText(absolutePath, json);
-        
+
         AssetDatabase.Refresh();
-        
+
         Object asset = AssetDatabase.LoadAssetAtPath<Object>(filePath);
         EditorGUIUtility.PingObject(asset);
         Selection.activeObject = asset;

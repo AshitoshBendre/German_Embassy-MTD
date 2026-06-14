@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+
 [Serializable]
 public class ReportsTabData
 {
@@ -11,23 +12,9 @@ public class ReportsTabData
 [Serializable]
 public class ReportData
 {
-    public List<String> textData;
-    public string titleText;
+    public string pdfURL;
+    public string titleText; // Added titleText
 
-    public bool IsInvalid()
-    {
-        if (string.IsNullOrWhiteSpace(titleText))
-            return true;
-
-        if (textData == null || textData.Count == 0)
-            return true;
-
-        foreach (string text in textData)
-        {
-            if (!string.IsNullOrWhiteSpace(text))
-                return false;
-        }
-
-        return true;
-    }
+    // Validate that neither the URL nor the title are missing
+    public bool IsInvalid() => string.IsNullOrWhiteSpace(pdfURL) || string.IsNullOrWhiteSpace(titleText);
 }

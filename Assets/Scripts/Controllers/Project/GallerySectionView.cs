@@ -17,6 +17,7 @@ public class GallerySectionView : MonoBehaviour, IProjectSectionView
     [SerializeField] private List<GameObject> objectsToShow;
     [SerializeField] private GameObject popupPanel;
     [SerializeField] private GameObject TabButton;
+    [SerializeField] private Button backButton;
     private ProjectContext projectContext;
 
     public void Initialize(ProjectContext context)
@@ -67,6 +68,10 @@ public class GallerySectionView : MonoBehaviour, IProjectSectionView
 
     public void ShowPhotoOnMainImageRect(string imageURL, string titleText)
     {
+        if (backButton!= null)
+        {
+            backButton.gameObject.SetActive(false);
+        }
         popupPanel.SetActive(true);
         string fullFolderPath = $"{projectContext.PanelFolderId}/{projectContext.ProjectFolderId}";
         imagecaption.text = titleText;
@@ -84,6 +89,10 @@ public class GallerySectionView : MonoBehaviour, IProjectSectionView
 
     public void OnUIExit()
     {
+        if (backButton != null)
+        {
+            backButton.gameObject.SetActive(true);
+        }
         popupPanel.SetActive(false);
     }
 

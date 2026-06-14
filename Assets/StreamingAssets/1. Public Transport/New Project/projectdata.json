@@ -1,0 +1,80 @@
+{
+    "projectTitle": "New Project",
+    "aboutTabData": {
+        "imageURL": "Gallery/dummy_image.jpg",
+        "aboutDatas": {
+            "textData": [
+                "The projectdataeeeee initiative represents a paradigm shift in synergistic, quantum-driven computing.",
+                "Furthermore, the core flux capacitor output has been stabilized at exactly 1.21 Gigawatts."
+            ]
+        }
+    },
+    "videosTabData": {
+        "videoDatas": [
+            {
+                "videoURL": "Videos/dummy_video.mp4",
+                "titleText": "Project Video Phase 1",
+                "thumbnailURL": "Gallery/dummy_image.jpg"
+            },
+            {
+                "videoURL": "Videos/dummy_video.mp4",
+                "titleText": "Project Video Phase 2",
+                "thumbnailURL": "Gallery/dummy_image.jpg"
+            },
+            {
+                "videoURL": "Videos/dummy_video.mp4",
+                "titleText": "Project Video Phase 3",
+                "thumbnailURL": "Gallery/dummy_image.jpg"
+            },
+            {
+                "videoURL": "Videos/dummy_video.mp4",
+                "titleText": "Project Video Phase 4",
+                "thumbnailURL": "Gallery/dummy_image.jpg"
+            }
+        ],
+        "idleTimeout": 2.0
+    },
+    "galleryTabData": {
+        "galleryDatas": [
+            {
+                "imageURL": "Gallery/dummy_image.jpg",
+                "titleText": "Architecture Snapshot 1"
+            },
+            {
+                "imageURL": "Gallery/dummy_image.jpg",
+                "titleText": "Architecture Snapshot 2"
+            },
+            {
+                "imageURL": "Gallery/dummy_image.jpg",
+                "titleText": "Architecture Snapshot 3"
+            },
+            {
+                "imageURL": "Gallery/dummy_image.jpg",
+                "titleText": "Architecture Snapshot 4"
+            },
+            {
+                "imageURL": "Gallery/dummy_image.jpg",
+                "titleText": "Architecture Snapshot 5"
+            },
+            {
+                "imageURL": "Gallery/dummy_image.jpg",
+                "titleText": "Architecture Snapshot 6"
+            }
+        ]
+    },
+    "dashboardTabData": {
+        "imageVideosURLs": []
+    },
+    "reportsTabData": {
+        "reportDatas": [
+            {
+                "pdfURL": "Reports/SamplePDF.pdf",
+                "titleText": "Q3 Idle Loop Automation Analysis"
+            },
+            {
+                "pdfURL": "Reports/SamplePDF.pdf",
+                "titleText": "Peripheral Latency Metrics"
+            }
+        ]
+    }
+}

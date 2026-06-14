@@ -10,19 +10,31 @@ public class ReportDataUI : MonoBehaviour
     private Button btn;
     [SerializeField] private TMP_Text text;
     private ReportSectionView sectionView;
-    private List<String> data;
+    private string data;
+
     private void Awake()
     {
         btn = GetComponent<Button>();
         btn.onClick.AddListener(OnClick);
     }
 
-    public void Initialize(ReportSectionView reportSectionView, string titleText, List<String> data)
+    // Updated to accept titleText
+    public void Initialize(ReportSectionView reportSectionView, string titleText, string pdfURL)
     {
-        text.text = titleText;
-        this.data = data;
-        sectionView = reportSectionView;
+        this.data = pdfURL;
+        this.sectionView = reportSectionView;
+
+        // Assign the title to the UI Text element
+        if (this.text != null)
+        {
+            this.text.text = titleText;
+        }
+        else
+        {
+            Debug.LogWarning("[ReportDataUI] TMP_Text component is not assigned in the inspector.");
+        }
     }
+
     private void OnClick()
     {
         if (sectionView == null)
@@ -31,7 +43,7 @@ public class ReportDataUI : MonoBehaviour
             return;
         }
 
-        if (data == null || data.Count == 0)
+        if (data == null || string.IsNullOrEmpty(data))
         {
             Debug.LogWarning("[ReportDataUI] Report data is empty.");
             return;

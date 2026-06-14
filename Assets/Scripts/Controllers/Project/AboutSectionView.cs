@@ -20,6 +20,7 @@ public class AboutSectionView : MonoBehaviour, IProjectSectionView
 
     [SerializeField] private GameObject TabButton;
     [SerializeField] private List<GameObject> objectsToShow;
+    [SerializeField] private Button backButton;
     public void Initialize(ProjectContext context)
     {
         /*if (!string.IsNullOrWhiteSpace(aboutData.imageURL))
@@ -78,10 +79,13 @@ public class AboutSectionView : MonoBehaviour, IProjectSectionView
 
             AboutDataUI dataUI = Instantiate(_aboutDataPrefab, textContainer);
             dataUI.Initialize(text);
-
+            
             createdCount++;
         }
-
+        if (backButton != null)
+        {
+            backButton.gameObject.SetActive(false);
+        }
         Debug.Log(
             $"[About Builder] Created {createdCount} text blocks. Skipped {skippedCount} invalid entries.");
 
@@ -102,7 +106,10 @@ public class AboutSectionView : MonoBehaviour, IProjectSectionView
     }
     public void OnUIExit()
     {
-        throw new System.NotImplementedException();
+        if (backButton != null)
+        {
+            backButton.gameObject.SetActive(true);
+        }
     }
 
     public void ShowUI()
