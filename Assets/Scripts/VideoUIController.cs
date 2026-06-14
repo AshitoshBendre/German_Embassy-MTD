@@ -22,6 +22,8 @@ public class VideoUIController : MonoBehaviour
     [Header("On Video Finished - Show")]
     [Tooltip("Objects shown when the video finishes.")]
     [SerializeField] private List<GameObject> onVideoFinishShow = new();
+    [Header("Fade In Settings")]
+    [SerializeField] private float fadeInDuration = 0.5f;
 
     [Header("Video Settings")]
     [SerializeField] private string videoPath;
@@ -117,6 +119,10 @@ public class VideoUIController : MonoBehaviour
         SetObjectsActive(onVideoFinishHide, false);
         SetObjectsActive(onVideoFinishShow, true);
 
+
+        /*
+        StartCoroutine(FadeInObjects(onVideoFinishShow));*/
+
         onVideoFinishedEvent?.Invoke();
         OnVideoFinished?.Invoke();
     }
@@ -128,5 +134,41 @@ public class VideoUIController : MonoBehaviour
         {
             if (obj != null) obj.SetActive(state);
         }
+    }
+
+    private IEnumerator FadeInObjects(List<GameObject> objects)
+    {
+        List<CanvasGroup> canvasGroups = new();
+
+        foreach (var obj in objects)
+        {
+            if (obj == null) continue;
+
+            obj.SetActive(true);
+
+            CanvasGroup cg = obj.GetComponent<CanvasGroup>();
+
+            if (cg == null)
+                cg = obj.AddComponent<CanvasGroup>();
+
+            cg.alpha = 0f;
+            canvasGroups.Add(cg);
+        }
+
+        float elapsed = 0f;
+
+        while (elapsed < fadeInDuration)
+        {
+            elapsed += Time.deltaTime;
+            float alpha = Mathf.Lerp(0f, 1f, elapsed / fadeInDuration);
+
+            foreach (var cg in canvasGroups)
+                cg.alpha = alpha;
+
+            yield return null;
+        }
+
+        foreach (var cg in canvasGroups)
+            cg.alpha = 1f;
     }
 }
