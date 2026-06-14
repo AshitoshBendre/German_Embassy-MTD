@@ -473,7 +473,19 @@ MonoBehaviour:
   m_TargetGraphic: {fileID: 6909736}
   m_OnClick:
     m_PersistentCalls:
-      m_Calls: []
+      m_Calls:
+      - m_Target: {fileID: 1831511818}
+        m_TargetAssemblyTypeName: VideoUIController, Assembly-CSharp
+        m_MethodName: PlayVideo
+        m_Mode: 1
+        m_Arguments:
+          m_ObjectArgument: {fileID: 0}
+          m_ObjectArgumentAssemblyTypeName: UnityEngine.Object, UnityEngine
+          m_IntArgument: 0
+          m_FloatArgument: 0
+          m_StringArgument: 
+          m_BoolArgument: 0
+        m_CallState: 2
 --- !u!114 &6909736
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -2444,6 +2456,7 @@ MonoBehaviour:
   _manager: {fileID: 1917818763}
   _mapVideoManager: {fileID: 392882381}
   _mapContainer: {fileID: 392882379}
+  _introVideoController: {fileID: 1693424469}
 --- !u!224 &101194084
 RectTransform:
   m_ObjectHideFlags: 0
@@ -12904,14 +12917,13 @@ GameObject:
   serializedVersion: 6
   m_Component:
   - component: {fileID: 543957727}
-  - component: {fileID: 543957728}
   m_Layer: 5
   m_Name: HomeScreen Btns
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
-  m_IsActive: 1
+  m_IsActive: 0
 --- !u!224 &543957727
 RectTransform:
   m_ObjectHideFlags: 0
@@ -12934,18 +12946,6 @@ RectTransform:
   m_AnchoredPosition: {x: 0, y: 0}
   m_SizeDelta: {x: 0, y: 0}
   m_Pivot: {x: 0.5, y: 0.5}
---- !u!225 &543957728
-CanvasGroup:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 543957726}
-  m_Enabled: 1
-  m_Alpha: 0
-  m_Interactable: 0
-  m_BlocksRaycasts: 0
-  m_IgnoreParentGroups: 0
 --- !u!1 &550440428
 GameObject:
   m_ObjectHideFlags: 0
@@ -14246,6 +14246,7 @@ MonoBehaviour:
   _manager: {fileID: 1659864042}
   _mapVideoManager: {fileID: 1545367086}
   _mapContainer: {fileID: 1545367084}
+  _introVideoController: {fileID: 979788002}
 --- !u!114 &627614209
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -22949,7 +22950,6 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   videoManager: {fileID: 979788003}
-  playButton: {fileID: 220757426}
   hideOnPlay:
   - {fileID: 1204938273}
   - {fileID: 1734874054}
@@ -22966,19 +22966,7 @@ MonoBehaviour:
       m_Calls: []
   onVideoFinishedEvent:
     m_PersistentCalls:
-      m_Calls:
-      - m_Target: {fileID: 627614208}
-        m_TargetAssemblyTypeName: PanelButtonUI, Assembly-CSharp
-        m_MethodName: ClickProjectsButton
-        m_Mode: 1
-        m_Arguments:
-          m_ObjectArgument: {fileID: 0}
-          m_ObjectArgumentAssemblyTypeName: UnityEngine.Object, UnityEngine
-          m_IntArgument: 0
-          m_FloatArgument: 0
-          m_StringArgument: 
-          m_BoolArgument: 0
-        m_CallState: 2
+      m_Calls: []
 --- !u!114 &979788003
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -36671,6 +36659,7 @@ MonoBehaviour:
   _manager: {fileID: 187998850}
   _mapVideoManager: {fileID: 1543810908}
   _mapContainer: {fileID: 1543810906}
+  _introVideoController: {fileID: 1954323465}
 --- !u!224 &1567364062
 RectTransform:
   m_ObjectHideFlags: 0
@@ -39256,7 +39245,7 @@ MonoBehaviour:
   hideOnBack:
   - {fileID: 1693424468}
   showOnBack:
-  - {fileID: 839134729}
+  - {fileID: 2012953392}
 --- !u!114 &1686376786
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -39713,7 +39702,6 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   videoManager: {fileID: 1693424470}
-  playButton: {fileID: 222684471}
   hideOnPlay:
   - {fileID: 2012953392}
   - {fileID: 1968976636}
@@ -42193,7 +42181,6 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   videoManager: {fileID: 1831511816}
-  playButton: {fileID: 6909735}
   hideOnPlay:
   - {fileID: 2026612327}
   - {fileID: 1340941028}
@@ -45405,7 +45392,6 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   videoManager: {fileID: 1954323466}
-  playButton: {fileID: 1688232188}
   hideOnPlay:
   - {fileID: 839134729}
   - {fileID: 370151965}
