@@ -42,7 +42,7 @@ public class PanelButtonUI : MonoBehaviour
 
     // ─── EXPLORE BUTTON FLOW ──────────────────────────────────────────────────
 
-    private void OnProjectsButtonClicked()
+    public void OnProjectsButtonClicked()
     {
         // If we have a cinematic intro video, play it and wait.
         if (_introVideoController != null)
@@ -60,7 +60,7 @@ public class PanelButtonUI : MonoBehaviour
         }
     }
 
-    private void BuildProjectList()
+    public void BuildProjectList()
     {
         // Clean up the listener so it doesn't fire again unexpectedly
         if (_introVideoController != null)
