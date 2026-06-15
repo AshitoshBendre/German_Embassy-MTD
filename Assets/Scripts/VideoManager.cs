@@ -90,6 +90,7 @@ public class VideoManager : MonoBehaviour
         // If something is already running, stop it cleanly first
         StopAllCoroutines();
         videoPlayer.Stop();
+
         isFading = false;
 
         exitOnComplete = autoExit;
