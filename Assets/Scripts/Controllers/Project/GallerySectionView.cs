@@ -269,12 +269,6 @@ public class GallerySectionView : MonoBehaviour, IProjectSectionView
             return false;
         }
 
-        if (string.IsNullOrWhiteSpace(galleryData.titleText))
-        {
-            Debug.LogWarning($"[Gallery Validation] Invalid titleText for image '{galleryData.imageURL}'.");
-            return false;
-        }
-
         /*string fullFolderPath = $"{projectContext.PanelFolderId}/{projectContext.ProjectFolderId}";
 
         string imagePath = Path.Combine(
