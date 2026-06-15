@@ -100,7 +100,7 @@ public class PanelButtonUI : MonoBehaviour
 
         _mapContainer.SetActive(true);
         string videoPath = Path.Combine(_myFolderId, _panelContext.Data.mapURL);
-        _mapVideoManager.PlayVideo(videoPath, true, OnMapVideoFinished);
+        _mapVideoManager.PlayVideo(videoPath, false, OnMapVideoFinished);
     }
 
     private void OnMapVideoFinished()
