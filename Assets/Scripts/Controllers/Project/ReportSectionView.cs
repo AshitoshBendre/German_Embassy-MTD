@@ -22,7 +22,7 @@ public class ReportSectionView : MonoBehaviour, IProjectSectionView
     [SerializeField] private Button backButton;
     private string FullFolderPath;
     private ProjectContext projectContext;
-
+    public bool canValidate = true;
     public void Initialize(ProjectContext context)
     {
         if (_pdfViewerUI == null)
@@ -126,48 +126,51 @@ public class ReportSectionView : MonoBehaviour, IProjectSectionView
 
     public void ValidateData(ProjectContext projectContext)
     {
-        Debug.Log($"<color=cyan>[Report Validation] Context received! Project Title is: {projectContext.Data.projectTitle}</color>");
-
-        bool shouldShowTab = false;
-        this.projectContext = projectContext;
-        ReportsTabData reportsTabData = projectContext.Data.reportsTabData;
-
-        if (reportsTabData == null)
+        if (canValidate)
         {
-            Debug.LogWarning("[Report Validation] ReportsTabData is NULL.");
-            TabButton.SetActive(false);
-            return;
-        }
+            Debug.Log($"<color=cyan>[Report Validation] Context received! Project Title is: {projectContext.Data.projectTitle}</color>");
 
-        if (reportsTabData.reportDatas == null)
-        {
-            Debug.LogWarning("[Report Validation] reportDatas list is NULL.");
-            TabButton.SetActive(false);
-            return;
-        }
+            bool shouldShowTab = false;
+            this.projectContext = projectContext;
+            ReportsTabData reportsTabData = projectContext.Data.reportsTabData;
 
-        if (reportsTabData.reportDatas.Count == 0)
-        {
-            Debug.LogWarning("[Report Validation] reportDatas list is empty.");
-            TabButton.SetActive(false);
-            return;
-        }
-
-        foreach (var reportData in reportsTabData.reportDatas)
-        {
-            if (IsReportDataValid(reportData))
+            if (reportsTabData == null)
             {
-                shouldShowTab = true;
-                break;
+                Debug.LogWarning("[Report Validation] ReportsTabData is NULL.");
+                TabButton.SetActive(false);
+                return;
             }
-        }
 
-        if (!shouldShowTab)
-        {
-            Debug.LogWarning("[Report Validation] No valid report entries found.");
-        }
+            if (reportsTabData.reportDatas == null)
+            {
+                Debug.LogWarning("[Report Validation] reportDatas list is NULL.");
+                TabButton.SetActive(false);
+                return;
+            }
 
-        TabButton.SetActive(shouldShowTab);
+            if (reportsTabData.reportDatas.Count == 0)
+            {
+                Debug.LogWarning("[Report Validation] reportDatas list is empty.");
+                TabButton.SetActive(false);
+                return;
+            }
+
+            foreach (var reportData in reportsTabData.reportDatas)
+            {
+                if (IsReportDataValid(reportData))
+                {
+                    shouldShowTab = true;
+                    break;
+                }
+            }
+
+            if (!shouldShowTab)
+            {
+                Debug.LogWarning("[Report Validation] No valid report entries found.");
+            }
+
+            TabButton.SetActive(shouldShowTab);
+        }
     }
 
     private bool IsReportDataValid(ReportData reportData)

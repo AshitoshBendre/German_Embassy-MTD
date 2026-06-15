@@ -23,11 +23,11 @@ public class JsonTemplateCreator : EditorWindow
     [MenuItem("Tools/Templates/Panel Data JSON")]
     public static void CreatePanelJson()
     {
-        // Requires PanelData to exist elsewhere in your project
         CreateJsonFile("paneldata.json", new PanelData
         {
             titleText = "",
-            imageURL = ""
+            imageURL = "",
+            mapURL = ""
         });
     }
 
@@ -89,7 +89,7 @@ public class JsonTemplateCreator : EditorWindow
         Directory.CreateDirectory(Path.Combine(projectFolder, "Gallery"));
         Directory.CreateDirectory(Path.Combine(projectFolder, "Videos"));
         Directory.CreateDirectory(Path.Combine(projectFolder, "Reports"));
-        Directory.CreateDirectory(Path.Combine(projectFolder, "Dashboard"));
+        // Dashboard folder creation removed here
 
         // --- COPY PHYSICAL DUMMY FILES ---
         if (isDummy)
@@ -98,7 +98,6 @@ public class JsonTemplateCreator : EditorWindow
         }
 
         // --- SAFE DATA GENERATION LOGIC ---
-        // Initialize everything with empty lists/strings to prevent JsonUtility from crashing on nulls
 
         AboutTabData aboutData = new AboutTabData { imageURL = "" };
         if (incAbout)
@@ -118,7 +117,7 @@ public class JsonTemplateCreator : EditorWindow
                     {
                         videoURL = "Videos/dummy_video.mp4",
                         titleText = $"Project Video Phase {i}",
-                        thumbnailURL = "Gallery/dummy_image.jpg" // Added thumbnail support
+                        thumbnailURL = "Gallery/dummy_image.jpg"
                     });
                 }
             }
@@ -128,7 +127,7 @@ public class JsonTemplateCreator : EditorWindow
                 {
                     videoURL = "",
                     titleText = "",
-                    thumbnailURL = "" // Added thumbnail support
+                    thumbnailURL = ""
                 });
             }
         }
@@ -176,10 +175,11 @@ public class JsonTemplateCreator : EditorWindow
         ProjectData data = new ProjectData
         {
             projectTitle = projectName,
+            imageURL = isDummy ? "Gallery/dummy_image.jpg" : "",
             aboutTabData = aboutData,
             videosTabData = videosData,
             galleryTabData = galleryData,
-            dashboardTabData = new DashboardTabData { imageVideosURLs = new List<string>() },
+            // Dashboard data removed here
             reportsTabData = reportsData
         };
 
@@ -223,7 +223,7 @@ public class JsonTemplateCreator : EditorWindow
         }
         else
         {
-            Debug.LogWarning($"[JsonTemplateCreator] Could not find '{sourceImagePath}'.");
+            Debug.LogWarning($"[JsonTemplateCreator] Could not find '{sourceImagePath}'. Check that 'template_image.jpg' exists beside this script.");
         }
 
         if (File.Exists(Path.GetFullPath(sourceVideoPath)))
@@ -232,7 +232,7 @@ public class JsonTemplateCreator : EditorWindow
         }
         else
         {
-            Debug.LogWarning($"[JsonTemplateCreator] Could not find '{sourceVideoPath}'.");
+            Debug.LogWarning($"[JsonTemplateCreator] Could not find '{sourceVideoPath}'. Check that 'template_video.mp4' exists beside this script.");
         }
     }
 

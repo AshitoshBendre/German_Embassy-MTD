@@ -22,12 +22,12 @@ public class GallerySectionView : MonoBehaviour, IProjectSectionView
     [Header("Navigation Controls")]
     [SerializeField] private Button nextButton;
     [SerializeField] private Button prevButton;
-
     private ProjectContext projectContext;
 
     // Track the currently viewed index and only the valid images to avoid errors on 'Next'
     private int currentImageIndex = -1;
     private List<GalleryData> validGalleryList = new();
+    public bool canValidate =true;
 
     public void Initialize(ProjectContext context)
     {
@@ -180,51 +180,53 @@ public class GallerySectionView : MonoBehaviour, IProjectSectionView
 
     public void ValidateData(ProjectContext projectContext)
     {
-        this.projectContext = projectContext;
-
-        bool shouldShowTab = false;
-
-        GalleryTabData galleryTabData = projectContext.Data.galleryTabData;
-
-        if (galleryTabData == null)
+        if (canValidate)
         {
-            Debug.LogWarning("[Gallery Validation] GalleryTabData is NULL.");
-            TabButton.SetActive(false);
-            return;
-        }
+            this.projectContext = projectContext;
 
-        if (galleryTabData.galleryDatas == null)
-        {
-            Debug.LogWarning("[Gallery Validation] galleryDatas list is NULL.");
-            TabButton.SetActive(false);
-            return;
-        }
+            bool shouldShowTab = false;
 
-        if (galleryTabData.galleryDatas.Count == 0)
-        {
-            Debug.LogWarning("[Gallery Validation] galleryDatas list is empty.");
-            TabButton.SetActive(false);
-            return;
-        }
+            GalleryTabData galleryTabData = projectContext.Data.galleryTabData;
 
-        foreach (var galleryData in galleryTabData.galleryDatas)
-        {
-            if (IsGalleryDataValid(galleryData))
+            if (galleryTabData == null)
             {
-                shouldShowTab = true;
-                break;
+                Debug.LogWarning("[Gallery Validation] GalleryTabData is NULL.");
+                TabButton.SetActive(false);
+                return;
             }
-        }
 
-        if (!shouldShowTab)
-        {
-            Debug.LogWarning($"[Gallery Validation] No valid gallery entries found for project '{projectContext.ProjectFolderId}'.");
-        }
+            if (galleryTabData.galleryDatas == null)
+            {
+                Debug.LogWarning("[Gallery Validation] galleryDatas list is NULL.");
+                TabButton.SetActive(false);
+                return;
+            }
 
-        StartGalleryPreload(projectContext);
-        TabButton.SetActive(shouldShowTab);
+            if (galleryTabData.galleryDatas.Count == 0)
+            {
+                Debug.LogWarning("[Gallery Validation] galleryDatas list is empty.");
+                TabButton.SetActive(false);
+                return;
+            }
+
+            foreach (var galleryData in galleryTabData.galleryDatas)
+            {
+                if (IsGalleryDataValid(galleryData))
+                {
+                    shouldShowTab = true;
+                    break;
+                }
+            }
+
+            if (!shouldShowTab)
+            {
+                Debug.LogWarning($"[Gallery Validation] No valid gallery entries found for project '{projectContext.ProjectFolderId}'.");
+            }
+
+            StartGalleryPreload(projectContext);
+            TabButton.SetActive(shouldShowTab);
+        }
     }
-
     private async void StartGalleryPreload(ProjectContext projectContext)
     {
         GalleryTabData galleryTabData = projectContext.Data.galleryTabData;
@@ -273,7 +275,7 @@ public class GallerySectionView : MonoBehaviour, IProjectSectionView
             return false;
         }
 
-        string fullFolderPath = $"{projectContext.PanelFolderId}/{projectContext.ProjectFolderId}";
+        /*string fullFolderPath = $"{projectContext.PanelFolderId}/{projectContext.ProjectFolderId}";
 
         string imagePath = Path.Combine(
             Application.streamingAssetsPath,
@@ -288,7 +290,7 @@ public class GallerySectionView : MonoBehaviour, IProjectSectionView
                 $"Image URL: {galleryData.imageURL}\n" +
                 $"Expected Path: {imagePath}");
             return false;
-        }
+        }*/
 
         return true;
     }

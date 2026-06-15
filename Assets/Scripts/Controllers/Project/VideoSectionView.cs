@@ -23,7 +23,7 @@ public class VideoSectionView : MonoBehaviour, IProjectSectionView
     private ProjectContext projectContext;
     private string FullFolderPath;
     private Coroutine idleTimeoutCoroutine;
-
+    public bool canValidate = true;
     private void Awake()
     {
         videoManager = GetComponent<VideoManager>();
@@ -245,49 +245,52 @@ public class VideoSectionView : MonoBehaviour, IProjectSectionView
 
     public void ValidateData(ProjectContext projectContext)
     {
-        this.projectContext = projectContext;
-
-        bool shouldShowTab = false;
-
-        VideosTabData videosTabData = projectContext.Data.videosTabData;
-
-        if (videosTabData == null)
+        if (canValidate)
         {
-            Debug.LogWarning("[Video Validation] VideosTabData is NULL.");
-            TabButton.SetActive(false);
-            return;
-        }
+            this.projectContext = projectContext;
 
-        if (videosTabData.videoDatas == null)
-        {
-            Debug.LogWarning("[Video Validation] videoDatas list is NULL.");
-            TabButton.SetActive(false);
-            return;
-        }
+            bool shouldShowTab = false;
 
-        if (videosTabData.videoDatas.Count == 0)
-        {
-            Debug.LogWarning("[Video Validation] videoDatas list is empty.");
-            TabButton.SetActive(false);
-            return;
-        }
+            VideosTabData videosTabData = projectContext.Data.videosTabData;
 
-        foreach (var videoData in videosTabData.videoDatas)
-        {
-            if (IsVideoDataValid(videoData))
+            if (videosTabData == null)
             {
-                shouldShowTab = true;
-                break;
+                Debug.LogWarning("[Video Validation] VideosTabData is NULL.");
+                TabButton.SetActive(false);
+                return;
             }
-        }
 
-        if (!shouldShowTab)
-        {
-            Debug.LogWarning(
-                $"[Video Validation] No valid video entries found for project '{projectContext.ProjectFolderId}'.");
-        }
+            if (videosTabData.videoDatas == null)
+            {
+                Debug.LogWarning("[Video Validation] videoDatas list is NULL.");
+                TabButton.SetActive(false);
+                return;
+            }
 
-        TabButton.SetActive(shouldShowTab);
+            if (videosTabData.videoDatas.Count == 0)
+            {
+                Debug.LogWarning("[Video Validation] videoDatas list is empty.");
+                TabButton.SetActive(false);
+                return;
+            }
+
+            foreach (var videoData in videosTabData.videoDatas)
+            {
+                if (IsVideoDataValid(videoData))
+                {
+                    shouldShowTab = true;
+                    break;
+                }
+            }
+
+            if (!shouldShowTab)
+            {
+                Debug.LogWarning(
+                    $"[Video Validation] No valid video entries found for project '{projectContext.ProjectFolderId}'.");
+            }
+
+            TabButton.SetActive(shouldShowTab);
+        }
     }
 
     /*private bool IsVideoDataValid(VideoData videoData)

@@ -1,5 +1,4 @@
-﻿
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
 using System.IO;
 using System.Threading.Tasks;
 using UnityEngine;
@@ -10,7 +9,7 @@ using UnityEngine;
 public class StreamingAssetsLoader : IDataLoader
 {
     private readonly string _basePath = Application.streamingAssetsPath;
-    
+
     public async Task<List<PanelContext>> LoadStartupPanelsAsync()
     {
         var panels = new List<PanelContext>();
@@ -24,6 +23,13 @@ public class StreamingAssetsLoader : IDataLoader
             if (File.Exists(jsonPath))
             {
                 string json = await File.ReadAllTextAsync(jsonPath);
+
+                // --- DEBUG ADDED HERE ---
+                if (string.IsNullOrWhiteSpace(json))
+                {
+                    Debug.LogError($"<color=red>[JSON ERROR]</color> paneldata.json in {dir} is empty!");
+                }
+
                 PanelData data = JsonUtility.FromJson<PanelData>(json);
 
                 panels.Add(new PanelContext
@@ -51,7 +57,22 @@ public class StreamingAssetsLoader : IDataLoader
 
             if (File.Exists(jsonPath))
             {
+                Debug.Log($"Json Path : {jsonPath}");
                 string json = await File.ReadAllTextAsync(jsonPath);
+
+                // --- DEBUG ADDED HERE ---
+                Debug.Log($"<color=cyan>[JSON DEBUG]</color> Reading projectdata.json from: {projDir}");
+
+                if (string.IsNullOrWhiteSpace(json))
+                {
+                    Debug.LogError($"<color=red>[JSON ERROR]</color> The JSON file in {projDir} is completely empty!");
+                }
+                else
+                {
+                    Debug.Log($"<color=yellow>[JSON RAW TEXT]</color>\n{json}");
+                }
+                // ------------------------
+
                 ProjectData data = JsonUtility.FromJson<ProjectData>(json);
 
                 // Package the data AND the routing paths into the Context
@@ -65,5 +86,4 @@ public class StreamingAssetsLoader : IDataLoader
         }
         return projects;
     }
-
 }

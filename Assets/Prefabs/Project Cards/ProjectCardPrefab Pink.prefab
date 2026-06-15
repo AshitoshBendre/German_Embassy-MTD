@@ -863,7 +863,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   _button: {fileID: 3778134978633950799}
-  _titleText: {fileID: 6978985503085433811}
+  _cardImage: {fileID: 1256232818911151601}
 --- !u!114 &3778134978633950799
 MonoBehaviour:
   m_ObjectHideFlags: 0
