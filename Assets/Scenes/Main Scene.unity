@@ -12097,9 +12097,9 @@ MonoBehaviour:
   popupPanel: {fileID: 2063052794}
   TabButton: {fileID: 1624006127}
   backButton: {fileID: 1705944465}
-  _reportRawImage: {fileID: 0}
-  _nextButton: {fileID: 0}
-  _prevButton: {fileID: 0}
+  _reportRawImage: {fileID: 1709030483}
+  _nextButton: {fileID: 355880188}
+  _prevButton: {fileID: 724677900}
   canValidate: 1
 --- !u!224 &736620977
 RectTransform:
