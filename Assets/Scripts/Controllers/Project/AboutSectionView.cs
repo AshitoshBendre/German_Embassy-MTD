@@ -7,9 +7,7 @@ public class AboutSectionView : MonoBehaviour, IProjectSectionView
 {
     [Header("UI References")]
     [SerializeField] private Image _aboutImage; // Replaced textContainer/prefab with a direct Image reference
-    [SerializeField] private GameObject TabButton;
     [SerializeField] private List<GameObject> objectsToShow;
-    [SerializeField] private Button backButton;
 
     [Header("Settings")]
     public bool canValidate = true;
@@ -38,19 +36,10 @@ public class AboutSectionView : MonoBehaviour, IProjectSectionView
         {
             Debug.LogWarning("[About Builder] Image URL is missing or empty.");
         }
-
-        if (backButton != null)
-        {
-            backButton.gameObject.SetActive(false);
-        }
     }
 
     public void OnUIExit()
     {
-        if (backButton != null)
-        {
-            backButton.gameObject.SetActive(true);
-        }
     }
 
     public void ShowUI()
@@ -70,11 +59,6 @@ public class AboutSectionView : MonoBehaviour, IProjectSectionView
             if (!isValid)
             {
                 Debug.LogWarning($"[About Validation] About tab disabled for project '{projectContext.ProjectFolderId}' due to missing image.");
-            }
-
-            if (TabButton != null)
-            {
-                TabButton.SetActive(isValid);
             }
         }
     }

@@ -1,0 +1,36 @@
+{
+    "projectTitle": "TEst",
+    "aboutTabData": {
+        "imageURL": "",
+        "aboutDatas": {
+            "textData": []
+        }
+    },
+    "videosTabData": {
+        "videoDatas": [],
+        "idleTimeout": 2.0
+    },
+    "galleryTabData": {
+        "galleryDatas": [
+            {
+                "imageURL": "",
+                "titleText": ""
+            }
+        ]
+    },
+    "dashboardTabData": {
+        "imageVideosURLs": []
+    },
+    "reportsTabData": {
+        "reportDatas": [
+            {
+                "pdfURL": "Reports/1.pdf",
+                "titleText": "testing pdf [5mb]"
+            },
+            {
+                "pdfURL": "Reports/2.pdf",
+                "titleText": "testing pdf 2 [13mb]"
+            }
+        ]
+    }
+}

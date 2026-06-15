@@ -33,7 +33,7 @@ public class ProjectDisplayManager : MonoBehaviour
         HideAllViewPanels();
         // The Zeroth Index Should Always have Tabs List 
         allPanels[0].SetActive(true);
-        //_aboutSection.Initialize(context);
+        _aboutSection.Initialize(context);
         //SwitchToView(_aboutSection);
     }
 

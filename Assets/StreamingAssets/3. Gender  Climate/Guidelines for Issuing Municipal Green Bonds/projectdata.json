@@ -1,0 +1,36 @@
+{
+    "projectTitle": "Guidelines for Issuing Municipal Green Bonds",
+    "aboutTabData": {
+        "imageURL": "Gallery/dummy_image.jpg",
+        "aboutDatas": {
+            "textData": [
+                "Guidelines enabling the municipality to issue green bonds, raising finance for low-carbon and climate-resilient urban infrastructure."
+            ]
+        }
+    },
+    "videosTabData": {
+        "videoDatas": [
+            
+        ],
+        "idleTimeout": 2.0
+    },
+    "galleryTabData": {
+        "galleryDatas": [
+            {
+                "imageURL": "Gallery/1.jpeg",
+                "titleText": "‎"
+            }
+        ]
+    },
+    "dashboardTabData": {
+        "imageVideosURLs": []
+    },
+    "reportsTabData": {
+        "reportDatas": [
+            {
+                "pdfURL": "Reports/1.pdf",
+                "titleText": "Guidelines for Issuing Municipal Green Bonds"
+            }
+        ]
+    }
+}

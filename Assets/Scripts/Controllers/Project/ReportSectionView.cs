@@ -1,36 +1,42 @@
 ﻿using System;
-using System.Collections;
 using System.Collections.Generic;
 using System.IO;
 using UnityEngine;
 using UnityEngine.UI;
-using UnityPdfViewer;
 
 public class ReportSectionView : MonoBehaviour, IProjectSectionView
 {
-    [Header("PopupData")]
-    [SerializeField] private Transform textContainer;
-    [SerializeField] private AboutDataUI _aboutDataPrefab;
-
-    [Header("PopupData")]
+    [Header("List Generation")]
     [SerializeField] private Transform listContainer;
     [SerializeField] private ReportDataUI _reportDataPrefab;
     [SerializeField] private List<GameObject> objectsToShow;
     [SerializeField] private GameObject popupPanel;
     [SerializeField] private GameObject TabButton;
-    [SerializeField] private PdfViewerUI _pdfViewerUI;
     [SerializeField] private Button backButton;
+
+    [Header("Image Slideshow Viewer")]
+    [SerializeField] private RawImage _reportRawImage; // Replaces the PDF Viewer
+    [SerializeField] private Button _nextButton;
+    [SerializeField] private Button _prevButton;
+
     private string FullFolderPath;
     private ProjectContext projectContext;
     public bool canValidate = true;
+
+    // State management for the current slideshow
+    private List<string> _currentImagePaths = new List<string>();
+    private int _currentImageIndex = 0;
+    private Texture2D _currentLoadedTexture;
+
+    private void Awake()
+    {
+        // Bind the navigation buttons via code to ensure they always work
+        if (_nextButton != null) _nextButton.onClick.AddListener(NextImage);
+        if (_prevButton != null) _prevButton.onClick.AddListener(PrevImage);
+    }
+
     public void Initialize(ProjectContext context)
     {
-        if (_pdfViewerUI == null)
-        {
-            Debug.LogError("PDF VIEWER IS NULL");
-        }
-
-        _pdfViewerUI.pathMode = PdfPathMode.RelativeToStreamingAssets;
         projectContext = context;
         FullFolderPath = $"{context.PanelFolderId}/{context.ProjectFolderId}";
         ReportListBuilder(context.Data.reportsTabData.reportDatas);
@@ -66,18 +72,19 @@ public class ReportSectionView : MonoBehaviour, IProjectSectionView
                 continue;
             }
 
-            string reportPath = Path.Combine(
+            // reportData.pdfURL is now treated as a DIRECTORY name
+            string reportDirectoryPath = Path.Combine(
                 Application.streamingAssetsPath,
                 FullFolderPath,
                 reportData.pdfURL);
 
             var reportObj = Instantiate(_reportDataPrefab, listContainer);
 
-            // Passed titleText into the UI initializer
+            // Pass the absolute directory path to the UI element
             reportObj.Initialize(
                 this,
                 reportData.titleText,
-                reportPath);
+                reportDirectoryPath);
 
             createdCount++;
         }
@@ -91,6 +98,13 @@ public class ReportSectionView : MonoBehaviour, IProjectSectionView
         {
             backButton.gameObject.SetActive(true);
         }
+
+        // Clean up memory when exiting the view
+        if (_currentLoadedTexture != null)
+        {
+            Destroy(_currentLoadedTexture);
+            _reportRawImage.texture = null;
+        }
     }
 
     public void ShowUI()
@@ -101,56 +115,116 @@ public class ReportSectionView : MonoBehaviour, IProjectSectionView
         }
     }
 
-    internal void ShowReportOnPopup(string data)
+    // Called by ReportDataUI when a report button is clicked
+    internal void ShowReportOnPopup(string directoryPath)
     {
-        if (data == null || string.IsNullOrEmpty(data))
+        if (string.IsNullOrEmpty(directoryPath) || !Directory.Exists(directoryPath))
         {
-            Debug.LogWarning("[Report Popup] Invalid report data.");
+            Debug.LogWarning("[Report Popup] Invalid directory path or directory does not exist.");
             return;
         }
 
         popupPanel.SetActive(true);
 
-        if (_pdfViewerUI == null)
-        {
-            Debug.LogError("PDF VIEWER IS NULL");
-        }
         if (backButton != null)
-        { 
+        {
             backButton.gameObject.SetActive(false);
         }
-        _pdfViewerUI.pathMode = PdfPathMode.RelativeToStreamingAssets;
-        _pdfViewerUI.pdfPath = data;
-        _pdfViewerUI.LoadPDF();
+
+        LoadImagesFromDirectory(directoryPath);
+    }
+
+    private void LoadImagesFromDirectory(string directoryPath)
+    {
+        _currentImagePaths.Clear();
+
+        // Get all files in the directory
+        string[] files = Directory.GetFiles(directoryPath);
+
+        // Filter out meta files and only keep image formats
+        foreach (string file in files)
+        {
+            if (file.EndsWith(".meta")) continue;
+
+            string extension = Path.GetExtension(file).ToLower();
+            if (extension == ".jpg" || extension == ".jpeg" || extension == ".png")
+            {
+                _currentImagePaths.Add(file);
+            }
+        }
+
+        if (_currentImagePaths.Count > 0)
+        {
+            _currentImageIndex = 0;
+            DisplayImageAtIndex(_currentImageIndex);
+        }
+        else
+        {
+            Debug.LogWarning($"[Report Popup] No valid images found in directory: {directoryPath}");
+            if (_reportRawImage != null) _reportRawImage.texture = null;
+            UpdateButtonInteractability();
+        }
+    }
+
+    private void DisplayImageAtIndex(int index)
+    {
+        if (index < 0 || index >= _currentImagePaths.Count || _reportRawImage == null) return;
+
+        string imagePath = _currentImagePaths[index];
+
+        if (File.Exists(imagePath))
+        {
+            // Clean up the old texture to prevent memory leaks
+            if (_currentLoadedTexture != null)
+            {
+                Destroy(_currentLoadedTexture);
+            }
+
+            // Load the new image directly from disk
+            byte[] fileData = File.ReadAllBytes(imagePath);
+            _currentLoadedTexture = new Texture2D(2, 2);
+            _currentLoadedTexture.LoadImage(fileData);
+
+            _reportRawImage.texture = _currentLoadedTexture;
+        }
+
+        UpdateButtonInteractability();
+    }
+
+    public void NextImage()
+    {
+        if (_currentImageIndex < _currentImagePaths.Count - 1)
+        {
+            _currentImageIndex++;
+            DisplayImageAtIndex(_currentImageIndex);
+        }
+    }
+
+    public void PrevImage()
+    {
+        if (_currentImageIndex > 0)
+        {
+            _currentImageIndex--;
+            DisplayImageAtIndex(_currentImageIndex);
+        }
+    }
+
+    private void UpdateButtonInteractability()
+    {
+        if (_nextButton != null) _nextButton.interactable = (_currentImageIndex < _currentImagePaths.Count - 1);
+        if (_prevButton != null) _prevButton.interactable = (_currentImageIndex > 0);
     }
 
     public void ValidateData(ProjectContext projectContext)
     {
         if (canValidate)
         {
-            Debug.Log($"<color=cyan>[Report Validation] Context received! Project Title is: {projectContext.Data.projectTitle}</color>");
-
             bool shouldShowTab = false;
             this.projectContext = projectContext;
             ReportsTabData reportsTabData = projectContext.Data.reportsTabData;
 
-            if (reportsTabData == null)
+            if (reportsTabData == null || reportsTabData.reportDatas == null || reportsTabData.reportDatas.Count == 0)
             {
-                Debug.LogWarning("[Report Validation] ReportsTabData is NULL.");
-                TabButton.SetActive(false);
-                return;
-            }
-
-            if (reportsTabData.reportDatas == null)
-            {
-                Debug.LogWarning("[Report Validation] reportDatas list is NULL.");
-                TabButton.SetActive(false);
-                return;
-            }
-
-            if (reportsTabData.reportDatas.Count == 0)
-            {
-                Debug.LogWarning("[Report Validation] reportDatas list is empty.");
                 TabButton.SetActive(false);
                 return;
             }
@@ -164,53 +238,43 @@ public class ReportSectionView : MonoBehaviour, IProjectSectionView
                 }
             }
 
-            if (!shouldShowTab)
-            {
-                Debug.LogWarning("[Report Validation] No valid report entries found.");
-            }
-
             TabButton.SetActive(shouldShowTab);
         }
     }
 
     private bool IsReportDataValid(ReportData reportData)
     {
-        if (reportData == null)
+        if (reportData == null || string.IsNullOrWhiteSpace(reportData.pdfURL) || string.IsNullOrWhiteSpace(reportData.titleText))
         {
-            Debug.LogWarning("[Report Validation] ReportData entry is NULL.");
-            return false;
-        }
-
-        if (string.IsNullOrWhiteSpace(reportData.pdfURL))
-        {
-            Debug.LogWarning("[Report Validation] Invalid pdfURL");
-            return false;
-        }
-
-        // Added validation check for the titleText
-        if (string.IsNullOrWhiteSpace(reportData.titleText))
-        {
-            Debug.LogWarning($"[Report Validation] Invalid titleText for report '{reportData.pdfURL}'.");
             return false;
         }
 
         string fullFolderPath = $"{projectContext.PanelFolderId}/{projectContext.ProjectFolderId}";
 
-        string reportPath = Path.Combine(
+        string reportDirectoryPath = Path.Combine(
             Application.streamingAssetsPath,
             fullFolderPath,
             reportData.pdfURL);
 
-        if (!File.Exists(reportPath))
+        // CHANGED: We now check if the DIRECTORY exists, rather than a single file.
+        if (!Directory.Exists(reportDirectoryPath))
         {
             Debug.LogWarning(
-                $"[Report Validation] PDF file not found.\n" +
+                $"[Report Validation] Image directory not found.\n" +
                 $"Title: {reportData.titleText}\n" +
-                $"PDF URL: {reportData.pdfURL}\n" +
-                $"Expected Path: {reportPath}");
+                $"Expected Directory: {reportDirectoryPath}");
             return false;
         }
 
         return true;
+    }
+
+    private void OnDestroy()
+    {
+        // Safety cleanup to prevent memory leaks when the scene/object is destroyed
+        if (_currentLoadedTexture != null)
+        {
+            Destroy(_currentLoadedTexture);
+        }
     }
 }
