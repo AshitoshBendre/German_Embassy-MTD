@@ -1,6 +1,7 @@
 ﻿
 using System.Collections.Generic;
 using System.IO;
+using System.Threading.Tasks;
 using TMPro;
 using UnityEngine;
 using UnityEngine.UI;
@@ -27,7 +28,7 @@ public class GallerySectionView : MonoBehaviour, IProjectSectionView
     }
 
 
-    private void ImageGridBuilder(List<GalleryData> data)
+    /*private void ImageGridBuilder(List<GalleryData> data)
     {
         if (data.Count == 0) return;
         foreach(Transform child in gridcontentContainer)
@@ -36,7 +37,7 @@ public class GallerySectionView : MonoBehaviour, IProjectSectionView
         }
         for (int i = 0; i < data.Count; i++)
         {
-            /*
+            *//*
             var imgObj = new GameObject($"ImageButton{i}");
             imgObj.AddComponent<Button>();
             var img = imgObj.AddComponent<Image>();
@@ -45,7 +46,7 @@ public class GallerySectionView : MonoBehaviour, IProjectSectionView
             imgBtn.Initialize(this, data[i].imageURL, data[i].titleText);
             Helpers.ImageHelper.LoadAndApplyImageAsync(fullFolderPath, data[i].imageURL, img);
             imgObj.transform.SetParent(gridcontentContainer);
-            */
+            *//*
 
             if (!IsGalleryDataValid( data[i]))
                 continue; 
@@ -58,11 +59,81 @@ public class GallerySectionView : MonoBehaviour, IProjectSectionView
             //Helpers.ImageHelper.LoadAndApplyImageAsync(fullFolderPath, data[i].imageURL, img);
 
 
-            /*if(i== 0)
+            *//*if(i== 0)
             {
                 imgBtn.OnClick();
-            }*/
+            }*//*
 
+        }
+    }*/
+
+    private async void ImageGridBuilder(List<GalleryData> data)
+    {
+        List<ImageButtonUI> buttons = new();
+        foreach (Transform child in gridcontentContainer)
+        {
+            Destroy(child.gameObject);
+        }
+        LayoutGroup layoutGroup =
+            gridcontentContainer.GetComponent<LayoutGroup>();
+
+        if (layoutGroup != null)
+            layoutGroup.enabled = false;
+
+        foreach (var galleryData in data)
+        {
+            if (!IsGalleryDataValid(galleryData))
+                continue;
+
+            var imageObj =
+                Instantiate(imageButtonPrefab, gridcontentContainer);
+
+            string fullFolderPath =
+                $"{projectContext.PanelFolderId}/{projectContext.ProjectFolderId}";
+
+            var imageBtnUI =
+                imageObj.GetComponent<ImageButtonUI>();
+
+            imageBtnUI.Initialize(
+                this,
+                galleryData.imageURL,
+                galleryData.titleText,
+                fullFolderPath);
+
+            buttons.Add(imageBtnUI);
+        }
+
+        if (layoutGroup != null)
+        {
+            layoutGroup.enabled = true;
+
+            LayoutRebuilder.ForceRebuildLayoutImmediate(
+                gridcontentContainer as RectTransform);
+        }
+
+        // Let Unity render one frame first
+        await Task.Yield();
+
+        await LoadButtonsInBatches(buttons, 1);
+    }
+
+    private async Task LoadButtonsInBatches(
+    List<ImageButtonUI> buttons,
+    int batchSize = 1)
+    {
+        for (int i = 0; i < buttons.Count; i += batchSize)
+        {
+            List<Task> batch = new();
+
+            for (int j = i; j < Mathf.Min(i + batchSize, buttons.Count); j++)
+            {
+                batch.Add(buttons[j].LoadImageButton());
+            }
+
+            await Task.WhenAll(batch);
+
+            // Wait 1 second before next image
+            await Task.Delay(1000);
         }
     }
 
@@ -139,10 +210,37 @@ public class GallerySectionView : MonoBehaviour, IProjectSectionView
             Debug.LogWarning(
                 $"[Gallery Validation] No valid gallery entries found for project '{projectContext.ProjectFolderId}'.");
         }
-
+        StartGalleryPreload(projectContext);
         TabButton.SetActive(shouldShowTab);
     }
+    private async void StartGalleryPreload(ProjectContext projectContext)
+    {
+        GalleryTabData galleryTabData = projectContext.Data.galleryTabData;
 
+        if (galleryTabData?.galleryDatas == null)
+            return;
+
+        string fullFolderPath =
+            $"{projectContext.PanelFolderId}/{projectContext.ProjectFolderId}";
+
+        List<Task> preloadTasks = new();
+
+        foreach (var galleryData in galleryTabData.galleryDatas)
+        {
+            if (!IsGalleryDataValid(galleryData))
+                continue;
+
+            preloadTasks.Add(
+                Helpers.ImageHelper.PreloadImageAsync(
+                    fullFolderPath,
+                    galleryData.imageURL));
+        }
+
+        // Don't block forever
+        await Task.WhenAny(
+            Task.WhenAll(preloadTasks),
+            Task.Delay(1000));
+    }
     private bool IsGalleryDataValid(GalleryData galleryData)
     {
         if (galleryData == null)
