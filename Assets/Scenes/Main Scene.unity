@@ -17530,8 +17530,8 @@ MonoBehaviour:
   TabButton: {fileID: 1463698032}
   backButton: {fileID: 194317304}
   _reportRawImage: {fileID: 712632366}
-  _nextButton: {fileID: 1783249084}
-  _prevButton: {fileID: 380906086}
+  _nextButton: {fileID: 380906086}
+  _prevButton: {fileID: 1783249084}
   canValidate: 1
 --- !u!224 &1002139788
 RectTransform:

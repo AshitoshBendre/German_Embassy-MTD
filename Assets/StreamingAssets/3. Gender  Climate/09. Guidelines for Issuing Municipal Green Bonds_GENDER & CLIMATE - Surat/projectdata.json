@@ -1,0 +1,33 @@
+{
+    "projectTitle": "9. Guidelines for Issuing Municipal Green Bonds_GENDER & CLIMATE - Surat",
+    "imageURL": "p.png",
+    "aboutTabData": {
+        "imageURL": "a.png"
+    },
+    "videosTabData": {
+        "videoDatas": [
+            {
+                "videoURL": "",
+                "titleText": "",
+                "thumbnailURL": ""
+            }
+        ],
+        "idleTimeout": 2.0
+    },
+    "galleryTabData": {
+        "galleryDatas": [
+            {
+                "imageURL": "Gallery/1.jpg",
+                "titleText": ""
+            }
+        ]
+    },
+    "reportsTabData": {
+        "reportDatas": [
+            {
+                "pdfURL": "Reports/PDF1",
+                "titleText": "Issuing Municipal Green Bonds"
+            }
+        ]
+    }
+}

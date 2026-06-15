@@ -1,0 +1,33 @@
+{
+    "projectTitle": "02.Safe Route to School + PLAYces - Plazas & Safe Intersection_NMT & ACCESSIBILITY",
+    "imageURL": "",
+    "aboutTabData": {
+        "imageURL": ""
+    },
+    "videosTabData": {
+        "videoDatas": [
+            {
+                "videoURL": "",
+                "titleText": "",
+                "thumbnailURL": ""
+            }
+        ],
+        "idleTimeout": 2.0
+    },
+    "galleryTabData": {
+        "galleryDatas": [
+            {
+                "imageURL": "",
+                "titleText": ""
+            }
+        ]
+    },
+    "reportsTabData": {
+        "reportDatas": [
+            {
+                "pdfURL": "",
+                "titleText": ""
+            }
+        ]
+    }
+}
