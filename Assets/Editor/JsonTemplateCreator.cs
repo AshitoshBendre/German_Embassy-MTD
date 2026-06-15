@@ -98,24 +98,12 @@ public class JsonTemplateCreator : EditorWindow
         }
 
         // --- SAFE DATA GENERATION LOGIC ---
-        // Initialize everything with empty lists to prevent JsonUtility from crashing on nulls
+        // Initialize everything with empty lists/strings to prevent JsonUtility from crashing on nulls
 
-        AboutTabData aboutData = new AboutTabData { aboutDatas = new AboutData { textData = new List<string>() } };
+        AboutTabData aboutData = new AboutTabData { imageURL = "" };
         if (incAbout)
         {
             aboutData.imageURL = isDummy ? "Gallery/dummy_image.jpg" : "";
-            if (isDummy)
-            {
-                aboutData.aboutDatas.textData = new List<string>
-                {
-                    "The projectdataeeeee initiative represents a paradigm shift in synergistic, quantum-driven computing.",
-                    "Furthermore, the core flux capacitor output has been stabilized at exactly 1.21 Gigawatts."
-                };
-            }
-            else
-            {
-                aboutData.aboutDatas.textData = new List<string> { "" };
-            }
         }
 
         VideosTabData videosData = new VideosTabData { videoDatas = new List<VideoData>() };
