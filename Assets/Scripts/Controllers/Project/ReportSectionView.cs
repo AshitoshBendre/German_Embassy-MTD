@@ -174,18 +174,39 @@ public class ReportSectionView : MonoBehaviour, IProjectSectionView
 
         if (File.Exists(imagePath))
         {
-            // Clean up the old texture to prevent memory leaks
             if (_currentLoadedTexture != null)
             {
                 Destroy(_currentLoadedTexture);
             }
 
-            // Load the new image directly from disk
             byte[] fileData = File.ReadAllBytes(imagePath);
             _currentLoadedTexture = new Texture2D(2, 2);
             _currentLoadedTexture.LoadImage(fileData);
 
             _reportRawImage.texture = _currentLoadedTexture;
+
+            // --- ASPECT RATIO LOGIC ---
+            AspectRatioFitter aspectFitter = _reportRawImage.GetComponent<AspectRatioFitter>();
+            if (aspectFitter == null)
+            {
+                aspectFitter = _reportRawImage.gameObject.AddComponent<AspectRatioFitter>();
+            }
+
+            aspectFitter.aspectMode = AspectRatioFitter.AspectMode.FitInParent;
+            aspectFitter.aspectRatio = (float)_currentLoadedTexture.width / _currentLoadedTexture.height;
+
+            // --- NEW: CENTERING & BOUNDING LOGIC ---
+            RectTransform rawImageRect = _reportRawImage.GetComponent<RectTransform>();
+
+            // 1. Set Pivot to the exact middle so it scales outward from the center
+            rawImageRect.pivot = new Vector2(0.5f, 0.5f);
+
+            // 2. Set Anchors to the middle of the parent
+            rawImageRect.anchorMin = new Vector2(0.5f, 0.5f);
+            rawImageRect.anchorMax = new Vector2(0.5f, 0.5f);
+
+            // 3. Reset the position to exactly 0,0 (dead center of the parent)
+            rawImageRect.anchoredPosition = Vector2.zero;
         }
 
         UpdateButtonInteractability();
