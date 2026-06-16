@@ -8,7 +8,7 @@
         "videoDatas": [
             {
                 "videoURL": "Videos/1.mp4",
-                "titleText": "",
+                "titleText": "temp",
                 "thumbnailURL": "Videos/1.jpg"
             }
         ],

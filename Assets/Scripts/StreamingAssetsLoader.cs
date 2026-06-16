@@ -6,15 +6,24 @@ using UnityEngine;
 /// <summary>
 /// Implementation of IDataLoader Which Utilizes the Local Streaming Assets for Data Loading
 /// </summary>
-public class StreamingAssetsLoader : IDataLoader
+public class StreamingAssetsLoader : MonoBehaviour, IDataLoader
 {
-    private readonly string _basePath = Application.streamingAssetsPath;
+    private string _basePath;
+
+    private void Awake()
+    {
+        // Safe initialization tied to the Unity lifecycle
+        _basePath = Application.streamingAssetsPath;
+    }
 
     public async Task<List<PanelContext>> LoadStartupPanelsAsync()
     {
         var panels = new List<PanelContext>();
 
-        string[] panelDirectories = Directory.GetDirectories(_basePath);
+        // Fallback safety in case this is called before Awake executes
+        string path = string.IsNullOrEmpty(_basePath) ? Application.streamingAssetsPath : _basePath;
+
+        string[] panelDirectories = Directory.GetDirectories(path);
 
         foreach (string dir in panelDirectories)
         {
@@ -45,7 +54,9 @@ public class StreamingAssetsLoader : IDataLoader
     public async Task<List<ProjectContext>> LoadProjectsForPanelAsync(string panelFolderId)
     {
         var projects = new List<ProjectContext>();
-        string panelPath = Path.Combine(Application.streamingAssetsPath, panelFolderId);
+
+        string path = string.IsNullOrEmpty(_basePath) ? Application.streamingAssetsPath : _basePath;
+        string panelPath = Path.Combine(path, panelFolderId);
 
         if (!Directory.Exists(panelPath)) return projects;
 

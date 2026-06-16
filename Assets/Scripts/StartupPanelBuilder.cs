@@ -8,12 +8,10 @@ public class StartupPanelBuilder : MonoBehaviour
 
     [SerializeField] private PanelButtonUI[] _panelButtons;
 
-    private IDataLoader _loader;
+    [SerializeField] private StreamingAssetsLoader _loader;
 
     private async void Start()
     {
-        _loader = new StreamingAssetsLoader();
-
         List<PanelContext> panels = await _loader.LoadStartupPanelsAsync();
 
         for (int i = 0; i < _panelButtons.Count(); i++)

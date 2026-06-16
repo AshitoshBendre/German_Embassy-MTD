@@ -19,20 +19,35 @@ public class ReportSectionView : MonoBehaviour, IProjectSectionView
     [SerializeField] private Button _nextButton;
     [SerializeField] private Button _prevButton;
 
+    [Header("Special Report Viewer (New)")]
+    [SerializeField] private GameObject _specialReportPanel;
+    [SerializeField] private RawImage _specialReportRawImage;
+    [SerializeField] private Button _specialNextButton;
+    [SerializeField] private Button _specialPrevButton;
+
     private string FullFolderPath;
     private ProjectContext projectContext;
     public bool canValidate = true;
 
-    // State management for the current slideshow
+    // State management for the regular slideshow
     private List<string> _currentImagePaths = new List<string>();
     private int _currentImageIndex = 0;
     private Texture2D _currentLoadedTexture;
 
+    // State management for the Special Report slideshow
+    private List<string> _specialImagePaths = new List<string>();
+    private int _currentSpecialIndex = 0;
+    private Texture2D _currentSpecialTexture;
+
     private void Awake()
     {
-        // Bind the navigation buttons via code to ensure they always work
+        // Bind the standard navigation buttons
         if (_nextButton != null) _nextButton.onClick.AddListener(NextImage);
         if (_prevButton != null) _prevButton.onClick.AddListener(PrevImage);
+
+        // Bind the special report navigation buttons
+        if (_specialNextButton != null) _specialNextButton.onClick.AddListener(NextSpecialImage);
+        if (_specialPrevButton != null) _specialPrevButton.onClick.AddListener(PrevSpecialImage);
     }
 
     public void Initialize(ProjectContext context)
@@ -72,7 +87,6 @@ public class ReportSectionView : MonoBehaviour, IProjectSectionView
                 continue;
             }
 
-            // reportData.pdfURL is now treated as a DIRECTORY name
             string reportDirectoryPath = Path.Combine(
                 Application.streamingAssetsPath,
                 FullFolderPath,
@@ -80,7 +94,6 @@ public class ReportSectionView : MonoBehaviour, IProjectSectionView
 
             var reportObj = Instantiate(_reportDataPrefab, listContainer);
 
-            // Pass the absolute directory path to the UI element
             reportObj.Initialize(
                 this,
                 reportData.titleText,
@@ -99,12 +112,15 @@ public class ReportSectionView : MonoBehaviour, IProjectSectionView
             backButton.gameObject.SetActive(true);
         }
 
-        // Clean up memory when exiting the view
+        // Clean up memory when exiting the standard view
         if (_currentLoadedTexture != null)
         {
             Destroy(_currentLoadedTexture);
             _reportRawImage.texture = null;
         }
+
+        // Ensure special report is closed as well
+        HideSpecialReport();
     }
 
     public void ShowUI()
@@ -115,7 +131,10 @@ public class ReportSectionView : MonoBehaviour, IProjectSectionView
         }
     }
 
-    // Called by ReportDataUI when a report button is clicked
+    // =========================================================
+    // --- STANDARD REPORT VIEWER LOGIC ---
+    // =========================================================
+
     internal void ShowReportOnPopup(string directoryPath)
     {
         if (string.IsNullOrEmpty(directoryPath) || !Directory.Exists(directoryPath))
@@ -137,11 +156,8 @@ public class ReportSectionView : MonoBehaviour, IProjectSectionView
     private void LoadImagesFromDirectory(string directoryPath)
     {
         _currentImagePaths.Clear();
-
-        // Get all files in the directory
         string[] files = Directory.GetFiles(directoryPath);
 
-        // Filter out meta files and only keep image formats
         foreach (string file in files)
         {
             if (file.EndsWith(".meta")) continue;
@@ -168,16 +184,77 @@ public class ReportSectionView : MonoBehaviour, IProjectSectionView
 
     private void DisplayImageAtIndex(int index)
     {
-        if (index < 0 || index >= _currentImagePaths.Count || _reportRawImage == null) return;
+        if (index < 0 || index >= _currentImagePaths.Count || _reportRawImage == null)
+        {
+            // Safe check for the UI Instance, then pass the Prefix, Message, and Color (Orange)
+            if (Helpers.ImageDebuggerUI.Instance != null)
+            {
+                Helpers.ImageDebuggerUI.Instance.AddLog("[WARN]", $"[Report Viewer] Aborted Display. Invalid index ({index}) or missing RawImage.", "#FFA500");
+            }
+            return;
+        }
 
+        string imagePath = _currentImagePaths[index];
+
+        // Prefix, Message, Color (Cyan)
+        if (Helpers.ImageDebuggerUI.Instance != null)
+        {
+            Helpers.ImageDebuggerUI.Instance.AddLog("[INFO]", $"[Report Viewer] Attempting to load image at index {index}: {imagePath}", "#00FFFF");
+        }
+
+        if (File.Exists(imagePath))
+        {
+            if (_currentLoadedTexture != null) Destroy(_currentLoadedTexture);
+
+            // 1. Read bytes and create texture
+            byte[] fileData = File.ReadAllBytes(imagePath);
+            _currentLoadedTexture = new Texture2D(2, 2);
+            _currentLoadedTexture.LoadImage(fileData);
+
+            _reportRawImage.texture = _currentLoadedTexture;
+
+            // 2. Format Aspect Ratio
+            AspectRatioFitter aspectFitter = _reportRawImage.GetComponent<AspectRatioFitter>();
+            if (aspectFitter == null) aspectFitter = _reportRawImage.gameObject.AddComponent<AspectRatioFitter>();
+
+            aspectFitter.aspectMode = AspectRatioFitter.AspectMode.FitInParent;
+            aspectFitter.aspectRatio = (float)_currentLoadedTexture.width / _currentLoadedTexture.height;
+
+            // 3. Center and Anchor
+            RectTransform rawImageRect = _reportRawImage.GetComponent<RectTransform>();
+            rawImageRect.pivot = new Vector2(0.5f, 0.5f);
+            rawImageRect.anchorMin = new Vector2(0.5f, 0.5f);
+            rawImageRect.anchorMax = new Vector2(0.5f, 0.5f);
+            rawImageRect.anchoredPosition = Vector2.zero;
+
+            // Success Log (Green)
+            if (Helpers.ImageDebuggerUI.Instance != null)
+            {
+                Helpers.ImageDebuggerUI.Instance.AddLog("[SUCCESS]", $"[Report Viewer] Formatted image: {System.IO.Path.GetFileName(imagePath)}", "#00FF00");
+            }
+        }
+        else
+        {
+            // Error Log (Red)
+            if (Helpers.ImageDebuggerUI.Instance != null)
+            {
+                Helpers.ImageDebuggerUI.Instance.AddLog("[ERROR]", $"[Report Viewer] Disk Error: File not found at path: {imagePath}", "#FF0000");
+            }
+        }
+
+        UpdateButtonInteractability();
+    }
+
+    /*private void DisplayImageAtIndex(int index)
+    {
+        if (index < 0 || index >= _currentImagePaths.Count || _reportRawImage == null) return;
+        
         string imagePath = _currentImagePaths[index];
 
         if (File.Exists(imagePath))
         {
-            if (_currentLoadedTexture != null)
-            {
-                Destroy(_currentLoadedTexture);
-            }
+            
+            if (_currentLoadedTexture != null) Destroy(_currentLoadedTexture);
 
             byte[] fileData = File.ReadAllBytes(imagePath);
             _currentLoadedTexture = new Texture2D(2, 2);
@@ -185,32 +262,21 @@ public class ReportSectionView : MonoBehaviour, IProjectSectionView
 
             _reportRawImage.texture = _currentLoadedTexture;
 
-            // --- ASPECT RATIO LOGIC ---
             AspectRatioFitter aspectFitter = _reportRawImage.GetComponent<AspectRatioFitter>();
-            if (aspectFitter == null)
-            {
-                aspectFitter = _reportRawImage.gameObject.AddComponent<AspectRatioFitter>();
-            }
+            if (aspectFitter == null) aspectFitter = _reportRawImage.gameObject.AddComponent<AspectRatioFitter>();
 
             aspectFitter.aspectMode = AspectRatioFitter.AspectMode.FitInParent;
             aspectFitter.aspectRatio = (float)_currentLoadedTexture.width / _currentLoadedTexture.height;
 
-            // --- NEW: CENTERING & BOUNDING LOGIC ---
             RectTransform rawImageRect = _reportRawImage.GetComponent<RectTransform>();
-
-            // 1. Set Pivot to the exact middle so it scales outward from the center
             rawImageRect.pivot = new Vector2(0.5f, 0.5f);
-
-            // 2. Set Anchors to the middle of the parent
             rawImageRect.anchorMin = new Vector2(0.5f, 0.5f);
             rawImageRect.anchorMax = new Vector2(0.5f, 0.5f);
-
-            // 3. Reset the position to exactly 0,0 (dead center of the parent)
             rawImageRect.anchoredPosition = Vector2.zero;
         }
 
         UpdateButtonInteractability();
-    }
+    }*/
 
     public void NextImage()
     {
@@ -235,6 +301,132 @@ public class ReportSectionView : MonoBehaviour, IProjectSectionView
         if (_nextButton != null) _nextButton.interactable = (_currentImageIndex < _currentImagePaths.Count - 1);
         if (_prevButton != null) _prevButton.interactable = (_currentImageIndex > 0);
     }
+
+    // =========================================================
+    // --- SPECIAL REPORT VIEWER LOGIC (NEW) ---
+    // =========================================================
+
+    public void ShowSpecialReport()
+    {
+        if (projectContext == null) return;
+
+        _specialReportPanel.SetActive(true);
+        _specialImagePaths.Clear();
+
+        // Path: StreamingAssets/PanelID/ProjectID/Special Report
+        string specialDirectoryPath = Path.Combine(
+            Application.streamingAssetsPath,
+            projectContext.PanelFolderId,
+            projectContext.ProjectFolderId,
+            "Special Report");
+
+        if (Directory.Exists(specialDirectoryPath))
+        {
+            string[] files = Directory.GetFiles(specialDirectoryPath);
+            foreach (string file in files)
+            {
+                if (file.EndsWith(".meta")) continue;
+
+                string extension = Path.GetExtension(file).ToLower();
+                if (extension == ".jpg" || extension == ".jpeg" || extension == ".png")
+                {
+                    _specialImagePaths.Add(file);
+                }
+            }
+        }
+        else
+        {
+            Debug.LogWarning($"[Special Report] Directory not found: {specialDirectoryPath}");
+        }
+
+        if (_specialImagePaths.Count > 0)
+        {
+            _currentSpecialIndex = 0;
+            DisplaySpecialImageAtIndex(_currentSpecialIndex);
+        }
+        else
+        {
+            Debug.LogWarning("[Special Report] No valid images found.");
+            if (_specialReportRawImage != null) _specialReportRawImage.texture = null;
+            UpdateSpecialButtonInteractability();
+        }
+    }
+
+    public void HideSpecialReport()
+    {
+        if (_specialReportPanel != null) _specialReportPanel.SetActive(false);
+
+        _currentSpecialIndex = -1;
+
+        if (_currentSpecialTexture != null)
+        {
+            Destroy(_currentSpecialTexture);
+            if (_specialReportRawImage != null) _specialReportRawImage.texture = null;
+        }
+    }
+
+    private void DisplaySpecialImageAtIndex(int index)
+    {
+        if (index < 0 || index >= _specialImagePaths.Count || _specialReportRawImage == null) return;
+
+        string imagePath = _specialImagePaths[index];
+
+        if (File.Exists(imagePath))
+        {
+            if (_currentSpecialTexture != null) Destroy(_currentSpecialTexture);
+
+            byte[] fileData = File.ReadAllBytes(imagePath);
+            _currentSpecialTexture = new Texture2D(2, 2);
+            _currentSpecialTexture.LoadImage(fileData);
+
+            _specialReportRawImage.texture = _currentSpecialTexture;
+
+            // Enforce aspect ratio and centering
+            AspectRatioFitter aspectFitter = _specialReportRawImage.GetComponent<AspectRatioFitter>();
+            if (aspectFitter == null) aspectFitter = _specialReportRawImage.gameObject.AddComponent<AspectRatioFitter>();
+
+            aspectFitter.aspectMode = AspectRatioFitter.AspectMode.FitInParent;
+            aspectFitter.aspectRatio = (float)_currentSpecialTexture.width / _currentSpecialTexture.height;
+
+            RectTransform rawImageRect = _specialReportRawImage.GetComponent<RectTransform>();
+            rawImageRect.pivot = new Vector2(0.5f, 0.5f);
+            rawImageRect.anchorMin = new Vector2(0.5f, 0.5f);
+            rawImageRect.anchorMax = new Vector2(0.5f, 0.5f);
+            rawImageRect.anchoredPosition = Vector2.zero;
+        }
+
+        UpdateSpecialButtonInteractability();
+    }
+
+    public void NextSpecialImage()
+    {
+        if (_specialReportPanel == null || !_specialReportPanel.activeSelf) return;
+
+        if (_currentSpecialIndex < _specialImagePaths.Count - 1)
+        {
+            _currentSpecialIndex++;
+            DisplaySpecialImageAtIndex(_currentSpecialIndex);
+        }
+    }
+
+    public void PrevSpecialImage()
+    {
+        if (_specialReportPanel == null || !_specialReportPanel.activeSelf) return;
+
+        if (_currentSpecialIndex > 0)
+        {
+            _currentSpecialIndex--;
+            DisplaySpecialImageAtIndex(_currentSpecialIndex);
+        }
+    }
+
+    private void UpdateSpecialButtonInteractability()
+    {
+        if (_specialNextButton != null) _specialNextButton.interactable = (_currentSpecialIndex < _specialImagePaths.Count - 1);
+        if (_specialPrevButton != null) _specialPrevButton.interactable = (_currentSpecialIndex > 0);
+    }
+
+    // =========================================================
 
     public void ValidateData(ProjectContext projectContext)
     {
@@ -277,7 +469,6 @@ public class ReportSectionView : MonoBehaviour, IProjectSectionView
             fullFolderPath,
             reportData.pdfURL);
 
-        // CHANGED: We now check if the DIRECTORY exists, rather than a single file.
         if (!Directory.Exists(reportDirectoryPath))
         {
             Debug.LogWarning(
@@ -292,10 +483,7 @@ public class ReportSectionView : MonoBehaviour, IProjectSectionView
 
     private void OnDestroy()
     {
-        // Safety cleanup to prevent memory leaks when the scene/object is destroyed
-        if (_currentLoadedTexture != null)
-        {
-            Destroy(_currentLoadedTexture);
-        }
+        if (_currentLoadedTexture != null) Destroy(_currentLoadedTexture);
+        if (_currentSpecialTexture != null) Destroy(_currentSpecialTexture);
     }
 }

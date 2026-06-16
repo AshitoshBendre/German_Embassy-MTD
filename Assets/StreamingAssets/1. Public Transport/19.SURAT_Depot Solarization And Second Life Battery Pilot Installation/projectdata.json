@@ -8,12 +8,12 @@
         "videoDatas": [
             {
                 "videoURL": "Videos/1.mp4",
-                "titleText": "",
+                "titleText": "Temp",
                 "thumbnailURL": "Videos/1.jpg"
             },
             {
                 "videoURL":"Videos/2.mp4",
-                "titleText":"",
+                "titleText":"Temp",
                 "thumbnailURL": "Videos/2.jpg"
             }
         ],
@@ -42,8 +42,8 @@
     "reportsTabData": {
         "reportDatas": [
             {
-                "pdfURL": "",
-                "titleText": ""
+                "pdfURL": "Reports/PDF1",
+                "titleText": "Deployment of 100 kW Solar PV with 224 kWh second life battery system at Althan Depot"
             }
         ]
     }

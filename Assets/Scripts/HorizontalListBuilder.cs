@@ -17,12 +17,12 @@ public class HorizontalListBuilder : MonoBehaviour
     }
     public async void BuildProjectList(string folderID, UIManager manager)
     {
-        manager.ShowScreen(this.gameObject, true,true,true);
+        manager.ShowScreen(this.gameObject, true, true, true);
         /// For Testing Only
         this.gameObject.SetActive(true);
 
         // Clearing any old Content
-        foreach(Transform child in _contentContainer)
+        foreach (Transform child in _contentContainer)
         {
             Destroy(child.gameObject);
         }
@@ -31,7 +31,7 @@ public class HorizontalListBuilder : MonoBehaviour
         foreach (ProjectContext project in projectContexts)
         {
             ProjectCardUI card = Instantiate(_projectCardPrefab, _contentContainer);
-            card.Initialize(project, _projectDisplayManager,manager);
+            card.Initialize(project, _projectDisplayManager, manager);
         }
     }
 }

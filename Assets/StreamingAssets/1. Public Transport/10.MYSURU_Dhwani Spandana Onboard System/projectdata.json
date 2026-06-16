@@ -7,9 +7,9 @@
     "videosTabData": {
         "videoDatas": [
             {
-                "videoURL": "",
-                "titleText": "",
-                "thumbnailURL": ""
+                "videoURL": "Videos/1.mp4",
+                "titleText": "tempadfad",
+                "thumbnailURL": "Videos/1.jpg"
             }
         ],
         "idleTimeout": 2.0

@@ -1,0 +1,33 @@
+{
+    "projectTitle": "20.Green Mobility",
+    "imageURL": "p.png",
+    "aboutTabData": {
+        "imageURL": "a.png"
+    },
+    "videosTabData": {
+        "videoDatas": [
+            {
+                "videoURL": "",
+                "titleText": "",
+                "thumbnailURL": ""
+            }
+        ],
+        "idleTimeout": 2.0
+    },
+    "galleryTabData": {
+        "galleryDatas": [
+            {
+                "imageURL": "",
+                "titleText": ""
+            }
+        ]
+    },
+    "reportsTabData": {
+        "reportDatas": [
+            {
+                "pdfURL": "",
+                "titleText": ""
+            }
+        ]
+    }
+}

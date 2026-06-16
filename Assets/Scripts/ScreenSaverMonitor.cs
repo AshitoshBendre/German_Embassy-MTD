@@ -1,44 +1,71 @@
-using System;
+using System.IO;
 using UnityEngine;
+using UnityEngine.SceneManagement;
+
+[System.Serializable]
+public class ScreenSaverConfig
+{
+    public float idleTimeout;
+}
 
 public class ScreenSaverMonitor : MonoBehaviour
 {
     [Header("Settings")]
     public float idleTimeout = 15f;
+    public string configFileName = "ScreenSaverConfig.json";
 
-    private float _lastInputTime;
-    private Vector3 _LastMousePosition;
+    private Vector3 _lastMousePosition;
+    private bool _isMediaPlaying = false;
 
-    private bool _isMediaPlaying =false;
-    private bool _isScreensaverActive =false;
+    // Track the active coroutine from the GlobalTimer so we can stop/reset it
+    private Coroutine _idleTimerCoroutine;
 
-    public event Action OnScreensaverActivated;
-    public event Action OnScreensaverDeactivated;
-    
     private void Start()
     {
+        LoadConfig();
+        _lastMousePosition = Input.mousePosition;
+
+        // Start the initial countdown
         WakeUp();
-        _LastMousePosition = Input.mousePosition;
+    }
+
+    private void LoadConfig()
+    {
+        string filePath = Path.Combine(Application.streamingAssetsPath, configFileName);
+
+        if (File.Exists(filePath))
+        {
+            try
+            {
+                string jsonString = File.ReadAllText(filePath);
+                ScreenSaverConfig configData = JsonUtility.FromJson<ScreenSaverConfig>(jsonString);
+
+                if (configData != null && configData.idleTimeout > 0)
+                {
+                    idleTimeout = configData.idleTimeout;
+                    Debug.Log($"<color=#00FF00>[ScreenSaver]</color> Loaded timeout from JSON: {idleTimeout} seconds.");
+                }
+            }
+            catch (System.Exception e)
+            {
+                Debug.LogError($"<color=#FF0000>[ScreenSaver]</color> Failed to read JSON config: {e.Message}");
+            }
+        }
+        else
+        {
+            Debug.LogWarning($"<color=#FFA500>[ScreenSaver]</color> No JSON found at {filePath}. Using default timeout: {idleTimeout} seconds.");
+        }
     }
 
     private void Update()
     {
-        // If media is playing, do not process idle logic
+        // If media is playing, ignore all idle logic completely
         if (_isMediaPlaying) return;
 
-        if (DetectGlobalInput()) // Checking Click Interaction or Draging
+        // If the user moves the mouse or clicks, reset the timer
+        if (DetectGlobalInput())
         {
             WakeUp();
-            if (_isScreensaverActive)
-            { 
-                DeactivateScreenSaver(); // Disable Screensaver if active
-            }
-          
-        }
-
-        if(!_isScreensaverActive &&(Time.unscaledTime - _lastInputTime)> idleTimeout)
-        {
-            ActivateScreenSaver();
         }
     }
 
@@ -49,43 +76,53 @@ public class ScreenSaverMonitor : MonoBehaviour
             return true;
         }
 
-        if(Input.mousePosition != _LastMousePosition)
+        if (Input.mousePosition != _lastMousePosition)
         {
-            _LastMousePosition= Input.mousePosition;
+            _lastMousePosition = Input.mousePosition;
             return true;
         }
+
         return false;
-    }
-
-    private void ActivateScreenSaver()
-    {
-        _isScreensaverActive = true;
-        OnScreensaverActivated?.Invoke();
-    }
-
-    private void DeactivateScreenSaver()
-    {
-        _isScreensaverActive = false;
-        OnScreensaverDeactivated?.Invoke();
     }
 
     private void WakeUp()
     {
-        _lastInputTime = Time.unscaledTime;
+        // 1. Stop the currently running timer (if there is one)
+        if (_idleTimerCoroutine != null)
+        {
+            GlobalTimer.Stop(_idleTimerCoroutine);
+        }
+
+        // 2. Start a fresh timer. If it reaches the end, it will trigger RestartCurrentScene
+        if (!_isMediaPlaying)
+        {
+            _idleTimerCoroutine = GlobalTimer.Start(idleTimeout, RestartCurrentScene);
+        }
     }
 
     public void SetMediaPlayingState(bool isPlaying)
     {
-        _isMediaPlaying=isPlaying;
+        _isMediaPlaying = isPlaying;
 
         if (!isPlaying)
         {
-            // If media Stops we still reset the timer to avoid the screensaver to show up if media stops
+            // Media stopped, start tracking idle time again
             WakeUp();
         }
-        else if(_isScreensaverActive) // Safety Callback, where if the screensaver is active and showhow the video is played it will deactive the ScreenSaver
+        else
         {
-            DeactivateScreenSaver();
+            // Media started, stop the idle timer so it doesn't trigger in the background
+            if (_idleTimerCoroutine != null)
+            {
+                GlobalTimer.Stop(_idleTimerCoroutine);
+                _idleTimerCoroutine = null;
+            }
         }
+    }
+
+    private void RestartCurrentScene()
+    {
+        Debug.Log("<color=#00FFFF>[ScreenSaver]</color> Idle timeout reached. Restarting Scene...");
+        SceneManager.LoadScene(SceneManager.GetActiveScene().buildIndex);
     }
 }

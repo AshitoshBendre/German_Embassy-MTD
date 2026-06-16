@@ -13,7 +13,7 @@ public class ScreenSaveController : MonoBehaviour
 
     private void Start()
     {
-        monitor = GetComponent<ScreenSaverMonitor>();
+        /*monitor = GetComponent<ScreenSaverMonitor>();
         if(monitor == null)
         {
             monitor = gameObject.AddComponent<ScreenSaverMonitor>();
@@ -24,7 +24,7 @@ public class ScreenSaveController : MonoBehaviour
         monitor.OnScreensaverDeactivated += HideScreenSaver;
 
 
-        canvasGroup = panel.GetComponent<CanvasGroup>();
+        canvasGroup = panel.GetComponent<CanvasGroup>();*/
     }
 
     private void ShowScreenSaver()

@@ -8,8 +8,8 @@ using UnityEngine.UI;
 public class GallerySectionView : MonoBehaviour, IProjectSectionView
 {
     [Header("Top Section")]
-    [SerializeField] private Image imageView;/*
-    [SerializeField] private TMP_Text imagecaption;*/
+    [SerializeField] private Image imageView;
+    /*[SerializeField] private TMP_Text imagecaption;*/
 
     [Header("Bottom Section")]
     [SerializeField] private Transform gridcontentContainer;
@@ -242,9 +242,19 @@ public class GallerySectionView : MonoBehaviour, IProjectSectionView
                 new Vector2(0.5f, 0.5f) // Centers the pivot
             );
 
-            // 3. Assign to the Image component and let Unity handle the aspect ratio naturally!
+            // 3. Assign to the Image component
             dashboardImageView.sprite = currentDashboardSprite;
             dashboardImageView.preserveAspect = true;
+
+            // --- STRICT ASPECT RATIO FITTER ---
+            // This guarantees the image scales properly inside its parent bounds without stretching
+            AspectRatioFitter aspectFitter = dashboardImageView.GetComponent<AspectRatioFitter>();
+            if (aspectFitter == null)
+            {
+                aspectFitter = dashboardImageView.gameObject.AddComponent<AspectRatioFitter>();
+            }
+            aspectFitter.aspectMode = AspectRatioFitter.AspectMode.FitInParent;
+            aspectFitter.aspectRatio = (float)currentDashboardTexture.width / currentDashboardTexture.height;
         }
 
         UpdateDashboardButtons();
@@ -252,6 +262,9 @@ public class GallerySectionView : MonoBehaviour, IProjectSectionView
 
     private void DashboardNextImage()
     {
+        // SAFETY CHECK: Only proceed if THIS specific dashboard panel is actually open
+        if (dashboardViewerPanel == null || !dashboardViewerPanel.activeSelf) return;
+
         if (currentDashboardIndex < dashboardImagePaths.Count - 1)
         {
             currentDashboardIndex++;
@@ -261,6 +274,9 @@ public class GallerySectionView : MonoBehaviour, IProjectSectionView
 
     private void DashboardPrevImage()
     {
+        // SAFETY CHECK: Only proceed if THIS specific dashboard panel is actually open
+        if (dashboardViewerPanel == null || !dashboardViewerPanel.activeSelf) return;
+
         if (currentDashboardIndex > 0)
         {
             currentDashboardIndex--;
@@ -279,6 +295,9 @@ public class GallerySectionView : MonoBehaviour, IProjectSectionView
 
     private void CloseDashboardViewer()
     {
+        // SAFETY CHECK: Only close and clean up if THIS specific panel is the open one
+        if (dashboardViewerPanel == null || !dashboardViewerPanel.activeSelf) return;
+
         dashboardViewerPanel.SetActive(false);
         currentDashboardIndex = -1;
 
@@ -308,7 +327,11 @@ public class GallerySectionView : MonoBehaviour, IProjectSectionView
         popupPanel.SetActive(false);
         currentImageIndex = -1;
 
-        CloseDashboardViewer(); // Ensure dashboard is closed and memory freed when leaving the section
+        // Force close without active check when exiting the entire UI section
+        if (dashboardViewerPanel != null) dashboardViewerPanel.SetActive(false);
+        if (currentDashboardSprite != null) Destroy(currentDashboardSprite);
+        if (currentDashboardTexture != null) Destroy(currentDashboardTexture);
+        if (dashboardImageView != null) dashboardImageView.sprite = null;
     }
 
     public void ValidateData(ProjectContext projectContext)
