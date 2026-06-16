@@ -1,0 +1,81 @@
+{
+    "projectTitle": "20.THIRUVANANTHAPURAM_Optimizing e Bus Schedule planning And Depot Management",
+    "imageURL": "p.png",
+    "aboutTabData": {
+        "imageURL": "a.png"
+    },
+    "videosTabData": {
+        "videoDatas": [
+            {
+                "videoURL": "Videos/1.mp4",
+                "titleText": "",
+                "thumbnailURL": "Videos/1.jpg"
+            }
+        ],
+        "idleTimeout": 2.0
+    },
+    "galleryTabData": {
+        "galleryDatas": [
+            {
+                "imageURL": "Gallery/1.jpg",
+                "titleText": ""
+            },
+            {
+                "imageURL": "Gallery/2.jpg",
+                "titleText": ""
+            },
+            {
+                "imageURL": "Gallery/3.jpg",
+                "titleText": ""
+            },
+            {
+                "imageURL": "Gallery/4.jpg",
+                "titleText": ""
+            },
+            {
+                "imageURL": "Gallery/5.jpg",
+                "titleText": ""
+            },
+            {
+                "imageURL": "Gallery/6.jpg",
+                "titleText": ""
+            },
+            {
+                "imageURL": "Gallery/7.jpg",
+                "titleText": ""
+            },
+            {
+                "imageURL": "Gallery/8.jpg",
+                "titleText": ""
+            },
+            {
+                "imageURL": "Gallery/9.jpg",
+                "titleText": ""
+            },
+            {
+                "imageURL": "Gallery/10.jpg",
+                "titleText": ""
+            },
+            {
+                "imageURL": "Gallery/11.jpg",
+                "titleText": ""
+            },
+            {
+                "imageURL": "Gallery/12.jpg",
+                "titleText": ""
+            },
+            {
+                "imageURL": "Gallery/13.jpg",
+                "titleText": ""
+            }
+        ]
+    },
+    "reportsTabData": {
+        "reportDatas": [
+            {
+                "pdfURL": "Reports",
+                "titleText": "e-bus Optimisation for KSRTC TVM"
+            }
+        ]
+    }
+}
