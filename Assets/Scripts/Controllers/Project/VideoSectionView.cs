@@ -9,8 +9,8 @@ using UnityEngine.UI;
 public class VideoSectionView : MonoBehaviour, IProjectSectionView
 {
     [Header("Top Section")]
-    [SerializeField] private TMP_Text videoCaptions;
-
+    /*[SerializeField] private TMP_Text videoCaptions;
+*/
     [Header("Bottom Sections")]
     [SerializeField] private Transform videoContainer;
     [SerializeField] private VideoButtonUI videoButtonPrefab;
@@ -208,8 +208,8 @@ public class VideoSectionView : MonoBehaviour, IProjectSectionView
         {
             backButton.gameObject.SetActive(false);
         }
-        popupPanel.SetActive(true);
-        videoCaptions.text = titleText;
+        popupPanel.SetActive(true);/*
+        videoCaptions.text = titleText;*/
         videoManager.PlayVideo(videoURL, true, HandleOnVideoEnd);
     }
 

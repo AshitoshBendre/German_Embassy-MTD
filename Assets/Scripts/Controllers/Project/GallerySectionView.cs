@@ -8,8 +8,8 @@ using UnityEngine.UI;
 public class GallerySectionView : MonoBehaviour, IProjectSectionView
 {
     [Header("Top Section")]
-    [SerializeField] private Image imageView;
-    [SerializeField] private TMP_Text imagecaption;
+    [SerializeField] private Image imageView;/*
+    [SerializeField] private TMP_Text imagecaption;*/
 
     [Header("Bottom Section")]
     [SerializeField] private Transform gridcontentContainer;
@@ -22,12 +22,35 @@ public class GallerySectionView : MonoBehaviour, IProjectSectionView
     [Header("Navigation Controls")]
     [SerializeField] private Button nextButton;
     [SerializeField] private Button prevButton;
+
+    [Header("Dashboard Viewer (New)")]
+    [SerializeField] private string projectID;
+    [SerializeField] private GameObject dashboardViewerPanel;
+    [SerializeField] private Image dashboardImageView; // Now using standard UI Image
+    [SerializeField] private Button dashboardNextButton;
+    [SerializeField] private Button dashboardPrevButton;
+    [SerializeField] private Button dashboardCloseButton;
+
     private ProjectContext projectContext;
 
-    // Track the currently viewed index and only the valid images to avoid errors on 'Next'
+    // State for main gallery
     private int currentImageIndex = -1;
     private List<GalleryData> validGalleryList = new();
-    public bool canValidate =true;
+    public bool canValidate = true;
+
+    // State for dashboard viewer
+    private List<string> dashboardImagePaths = new List<string>();
+    private int currentDashboardIndex = -1;
+    private Texture2D currentDashboardTexture;
+    private Sprite currentDashboardSprite; // Track sprite to prevent memory leaks
+
+    private void Awake()
+    {
+        // Bind the new dashboard buttons via code to ensure they always work
+        if (dashboardNextButton != null) dashboardNextButton.onClick.AddListener(DashboardNextImage);
+        if (dashboardPrevButton != null) dashboardPrevButton.onClick.AddListener(DashboardPrevImage);
+        if (dashboardCloseButton != null) dashboardCloseButton.onClick.AddListener(CloseDashboardViewer);
+    }
 
     public void Initialize(ProjectContext context)
     {
@@ -38,7 +61,7 @@ public class GallerySectionView : MonoBehaviour, IProjectSectionView
     private async void ImageGridBuilder(List<GalleryData> data)
     {
         List<ImageButtonUI> buttons = new();
-        validGalleryList.Clear(); // Clear previous valid entries
+        validGalleryList.Clear();
 
         foreach (Transform child in gridcontentContainer)
         {
@@ -54,7 +77,6 @@ public class GallerySectionView : MonoBehaviour, IProjectSectionView
             if (!IsGalleryDataValid(galleryData))
                 continue;
 
-            // Cache the valid data so our Next/Prev logic knows what to cycle through
             validGalleryList.Add(galleryData);
 
             var imageObj = Instantiate(imageButtonPrefab, gridcontentContainer);
@@ -78,9 +100,7 @@ public class GallerySectionView : MonoBehaviour, IProjectSectionView
             LayoutRebuilder.ForceRebuildLayoutImmediate(gridcontentContainer as RectTransform);
         }
 
-        // Let Unity render one frame first
         await Task.Yield();
-
         await LoadButtonsInBatches(buttons, 1);
     }
 
@@ -96,8 +116,6 @@ public class GallerySectionView : MonoBehaviour, IProjectSectionView
             }
 
             await Task.WhenAll(batch);
-
-            // Wait 1 second before next image
             await Task.Delay(400);
         }
     }
@@ -111,15 +129,12 @@ public class GallerySectionView : MonoBehaviour, IProjectSectionView
 
         popupPanel.SetActive(true);
         string fullFolderPath = $"{projectContext.PanelFolderId}/{projectContext.ProjectFolderId}";
-        imagecaption.text = titleText;
+        /*imagecaption.text = titleText;*/
         Helpers.ImageHelper.LoadAndApplyImageAsync(fullFolderPath, imageURL, imageView);
 
-        // Find the index of the currently loaded image so we know where we are in the list
         currentImageIndex = validGalleryList.FindIndex(x => x.imageURL == imageURL);
         UpdateButtonStates();
     }
-
-    // --- NEW NAVIGATION METHODS ---
 
     public void ShowNextImage()
     {
@@ -145,20 +160,136 @@ public class GallerySectionView : MonoBehaviour, IProjectSectionView
     {
         if (nextButton != null)
         {
-            // Disable button if we are at the end of the list or list is empty
             bool hasNext = (currentImageIndex >= 0 && currentImageIndex < validGalleryList.Count - 1);
-            nextButton.gameObject.SetActive(hasNext); // Use nextButton.interactable = hasNext; if you prefer greyed out instead of hidden
+            nextButton.gameObject.SetActive(hasNext);
         }
 
         if (prevButton != null)
         {
-            // Disable button if we are at the start of the list
             bool hasPrev = (currentImageIndex > 0);
-            prevButton.gameObject.SetActive(hasPrev); // Use prevButton.interactable = hasPrev; if you prefer greyed out instead of hidden
+            prevButton.gameObject.SetActive(hasPrev);
         }
     }
 
-    // --- END NEW NAVIGATION METHODS ---
+    // =========================================================
+    // --- NEW DASHBOARD VIEWER LOGIC ---
+    // =========================================================
+
+    public void OpenDashboardViewer()
+    {
+        dashboardViewerPanel.SetActive(true);
+        dashboardImagePaths.Clear();
+
+        // Target path: StreamingAssets/PanelFolderID/Dashboard/
+        string dashboardDirectory = Path.Combine(
+            Application.streamingAssetsPath,
+            projectID,
+            "Dashboard");
+
+        if (Directory.Exists(dashboardDirectory))
+        {
+            string[] files = Directory.GetFiles(dashboardDirectory);
+            foreach (string file in files)
+            {
+                if (file.EndsWith(".meta")) continue;
+
+                string extension = Path.GetExtension(file).ToLower();
+                if (extension == ".jpg" || extension == ".jpeg" || extension == ".png")
+                {
+                    dashboardImagePaths.Add(file);
+                }
+            }
+        }
+        else
+        {
+            Debug.LogWarning($"[Dashboard Viewer] Directory does not exist: {dashboardDirectory}");
+        }
+
+        if (dashboardImagePaths.Count > 0)
+        {
+            currentDashboardIndex = 0;
+            DisplayDashboardImage(currentDashboardIndex);
+        }
+        else
+        {
+            Debug.LogWarning("[Dashboard Viewer] No valid images found in Dashboard folder.");
+            if (dashboardImageView != null) dashboardImageView.sprite = null;
+            UpdateDashboardButtons();
+        }
+    }
+
+    private void DisplayDashboardImage(int index)
+    {
+        if (index < 0 || index >= dashboardImagePaths.Count || dashboardImageView == null) return;
+
+        string imagePath = dashboardImagePaths[index];
+
+        if (File.Exists(imagePath))
+        {
+            // CRITICAL: Destroy both the old sprite AND the old texture to prevent memory leaks
+            if (currentDashboardSprite != null) Destroy(currentDashboardSprite);
+            if (currentDashboardTexture != null) Destroy(currentDashboardTexture);
+
+            // 1. Load the raw bytes into a Texture2D
+            byte[] fileData = File.ReadAllBytes(imagePath);
+            currentDashboardTexture = new Texture2D(2, 2);
+            currentDashboardTexture.LoadImage(fileData);
+
+            // 2. Convert the Texture2D into a UI Sprite
+            currentDashboardSprite = Sprite.Create(
+                currentDashboardTexture,
+                new Rect(0, 0, currentDashboardTexture.width, currentDashboardTexture.height),
+                new Vector2(0.5f, 0.5f) // Centers the pivot
+            );
+
+            // 3. Assign to the Image component and let Unity handle the aspect ratio naturally!
+            dashboardImageView.sprite = currentDashboardSprite;
+            dashboardImageView.preserveAspect = true;
+        }
+
+        UpdateDashboardButtons();
+    }
+
+    private void DashboardNextImage()
+    {
+        if (currentDashboardIndex < dashboardImagePaths.Count - 1)
+        {
+            currentDashboardIndex++;
+            DisplayDashboardImage(currentDashboardIndex);
+        }
+    }
+
+    private void DashboardPrevImage()
+    {
+        if (currentDashboardIndex > 0)
+        {
+            currentDashboardIndex--;
+            DisplayDashboardImage(currentDashboardIndex);
+        }
+    }
+
+    private void UpdateDashboardButtons()
+    {
+        if (dashboardNextButton != null)
+            dashboardNextButton.gameObject.SetActive(currentDashboardIndex < dashboardImagePaths.Count - 1);
+
+        if (dashboardPrevButton != null)
+            dashboardPrevButton.gameObject.SetActive(currentDashboardIndex > 0);
+    }
+
+    private void CloseDashboardViewer()
+    {
+        dashboardViewerPanel.SetActive(false);
+        currentDashboardIndex = -1;
+
+        // Clean up both texture and sprite
+        if (currentDashboardSprite != null) Destroy(currentDashboardSprite);
+        if (currentDashboardTexture != null) Destroy(currentDashboardTexture);
+
+        if (dashboardImageView != null) dashboardImageView.sprite = null;
+    }
+
+    // =========================================================
 
     public void ShowUI()
     {
@@ -175,7 +306,9 @@ public class GallerySectionView : MonoBehaviour, IProjectSectionView
             backButton.gameObject.SetActive(true);
         }
         popupPanel.SetActive(false);
-        currentImageIndex = -1; // Reset index on exit
+        currentImageIndex = -1;
+
+        CloseDashboardViewer(); // Ensure dashboard is closed and memory freed when leaving the section
     }
 
     public void ValidateData(ProjectContext projectContext)
@@ -188,23 +321,8 @@ public class GallerySectionView : MonoBehaviour, IProjectSectionView
 
             GalleryTabData galleryTabData = projectContext.Data.galleryTabData;
 
-            if (galleryTabData == null)
+            if (galleryTabData == null || galleryTabData.galleryDatas == null || galleryTabData.galleryDatas.Count == 0)
             {
-                Debug.LogWarning("[Gallery Validation] GalleryTabData is NULL.");
-                TabButton.SetActive(false);
-                return;
-            }
-
-            if (galleryTabData.galleryDatas == null)
-            {
-                Debug.LogWarning("[Gallery Validation] galleryDatas list is NULL.");
-                TabButton.SetActive(false);
-                return;
-            }
-
-            if (galleryTabData.galleryDatas.Count == 0)
-            {
-                Debug.LogWarning("[Gallery Validation] galleryDatas list is empty.");
                 TabButton.SetActive(false);
                 return;
             }
@@ -218,15 +336,11 @@ public class GallerySectionView : MonoBehaviour, IProjectSectionView
                 }
             }
 
-            if (!shouldShowTab)
-            {
-                Debug.LogWarning($"[Gallery Validation] No valid gallery entries found for project '{projectContext.ProjectFolderId}'.");
-            }
-
             StartGalleryPreload(projectContext);
             TabButton.SetActive(shouldShowTab);
         }
     }
+
     private async void StartGalleryPreload(ProjectContext projectContext)
     {
         GalleryTabData galleryTabData = projectContext.Data.galleryTabData;
@@ -249,7 +363,6 @@ public class GallerySectionView : MonoBehaviour, IProjectSectionView
                     galleryData.imageURL));
         }
 
-        // Don't block forever
         await Task.WhenAny(
             Task.WhenAll(preloadTasks),
             Task.Delay(1000));
@@ -257,35 +370,17 @@ public class GallerySectionView : MonoBehaviour, IProjectSectionView
 
     private bool IsGalleryDataValid(GalleryData galleryData)
     {
-        if (galleryData == null)
+        if (galleryData == null || string.IsNullOrWhiteSpace(galleryData.imageURL))
         {
-            Debug.LogWarning("[Gallery Validation] GalleryData entry is NULL.");
             return false;
         }
-
-        if (string.IsNullOrWhiteSpace(galleryData.imageURL))
-        {
-            Debug.LogWarning($"[Gallery Validation] Invalid imageURL for entry with title '{galleryData.titleText}'.");
-            return false;
-        }
-
-        /*string fullFolderPath = $"{projectContext.PanelFolderId}/{projectContext.ProjectFolderId}";
-
-        string imagePath = Path.Combine(
-            Application.streamingAssetsPath,
-            fullFolderPath,
-            galleryData.imageURL);
-
-        if (!File.Exists(imagePath))
-        {
-            Debug.LogWarning(
-                $"[Gallery Validation] Image file not found.\n" +
-                $"Title: {galleryData.titleText}\n" +
-                $"Image URL: {galleryData.imageURL}\n" +
-                $"Expected Path: {imagePath}");
-            return false;
-        }*/
-
         return true;
+    }
+
+    private void OnDestroy()
+    {
+        // Clean up loaded dashboard texture to avoid memory leaks
+        if (currentDashboardSprite != null) Destroy(currentDashboardSprite);
+        if (currentDashboardTexture != null) Destroy(currentDashboardTexture);
     }
 }
