@@ -8,7 +8,7 @@ public class ImageButtonUI : MonoBehaviour
     private Button btn;
     private GallerySectionView sectionView;
     private string imageUrl;
-    private string titleText;
+   /* private string titleText;*/
     private string fullFolderPath;
     [SerializeField] private Image image;
 
@@ -19,11 +19,11 @@ public class ImageButtonUI : MonoBehaviour
         btn = GetComponent<Button>();
         btn.onClick.AddListener(OnClick);
     }
-    public void Initialize(GallerySectionView sectionView, string imageUrl, string titleText, string fullFolderPath)
+    public void Initialize(GallerySectionView sectionView, string imageUrl, /*string titleText,*/ string fullFolderPath)
     {
         this.sectionView = sectionView;
         this.imageUrl = imageUrl;
-        this.titleText = titleText;
+        /*this.titleText = titleText;*/
         this.fullFolderPath = fullFolderPath;
         /*if(image!= null)
             Helpers.ImageHelper.LoadAndApplyImageAsync(fullFolderPath, imageUrl, image);
@@ -45,7 +45,7 @@ public class ImageButtonUI : MonoBehaviour
     public void OnClick()
     {
         if (string.IsNullOrWhiteSpace(imageUrl) || sectionView == null) return;
-
-        sectionView.ShowPhotoOnMainImageRect(imageUrl, titleText);
+/*
+        sectionView.ShowPhotoOnMainImageRect(imageUrl, titleText);*/
     }
 }

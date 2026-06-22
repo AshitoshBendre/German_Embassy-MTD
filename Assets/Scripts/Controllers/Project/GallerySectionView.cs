@@ -1,7 +1,9 @@
-﻿using System.Collections.Generic;
+﻿using ScrollCarousel;
+using System.Collections.Generic;
 using System.IO;
 using System.Threading.Tasks;
 using TMPro;
+using Unity.VisualScripting;
 using UnityEngine;
 using UnityEngine.UI;
 
@@ -9,6 +11,7 @@ public class GallerySectionView : MonoBehaviour, IProjectSectionView
 {
     [Header("Top Section")]
     [SerializeField] private Image imageView;
+    [SerializeField] private Carousel carousel;
     /*[SerializeField] private TMP_Text imagecaption;*/
 
     [Header("Bottom Section")]
@@ -61,6 +64,7 @@ public class GallerySectionView : MonoBehaviour, IProjectSectionView
     private async void ImageGridBuilder(List<GalleryData> data)
     {
         List<ImageButtonUI> buttons = new();
+        List<RectTransform> rectTransform = new List<RectTransform>();
         validGalleryList.Clear();
 
         foreach (Transform child in gridcontentContainer)
@@ -80,25 +84,29 @@ public class GallerySectionView : MonoBehaviour, IProjectSectionView
             validGalleryList.Add(galleryData);
 
             var imageObj = Instantiate(imageButtonPrefab, gridcontentContainer);
-
+            rectTransform.Add(imageObj.GetComponent<RectTransform>());
             string fullFolderPath = $"{projectContext.PanelFolderId}/{projectContext.ProjectFolderId}";
-
+            imageObj.AddComponent<CarouselButton>();
             var imageBtnUI = imageObj.GetComponent<ImageButtonUI>();
 
             imageBtnUI.Initialize(
                 this,
                 galleryData.imageURL,
-                galleryData.titleText,
+                //galleryData.titleText,
                 fullFolderPath);
 
             buttons.Add(imageBtnUI);
         }
 
-        if (layoutGroup != null)
+        if (carousel != null)
+        {
+            carousel.Items.AddRange(rectTransform);
+        }
+        /*if (layoutGroup != null)
         {
             layoutGroup.enabled = true;
             LayoutRebuilder.ForceRebuildLayoutImmediate(gridcontentContainer as RectTransform);
-        }
+        }*/
 
         await Task.Yield();
         await LoadButtonsInBatches(buttons, 1);
@@ -116,11 +124,11 @@ public class GallerySectionView : MonoBehaviour, IProjectSectionView
             }
 
             await Task.WhenAll(batch);
-            await Task.Delay(400);
+            await Task.Delay(500);
         }
     }
 
-    public void ShowPhotoOnMainImageRect(string imageURL, string titleText)
+/*    public void ShowPhotoOnMainImageRect(string imageURL, string titleText)
     {
         if (backButton != null)
         {
@@ -129,13 +137,13 @@ public class GallerySectionView : MonoBehaviour, IProjectSectionView
 
         popupPanel.SetActive(true);
         string fullFolderPath = $"{projectContext.PanelFolderId}/{projectContext.ProjectFolderId}";
-        /*imagecaption.text = titleText;*/
+        *//*imagecaption.text = titleText;*//*
         Helpers.ImageHelper.LoadAndApplyImageAsync(fullFolderPath, imageURL, imageView);
 
         currentImageIndex = validGalleryList.FindIndex(x => x.imageURL == imageURL);
         UpdateButtonStates();
-    }
-
+    }*/
+/*
     public void ShowNextImage()
     {
         if (currentImageIndex >= 0 && currentImageIndex < validGalleryList.Count - 1)
@@ -169,7 +177,7 @@ public class GallerySectionView : MonoBehaviour, IProjectSectionView
             bool hasPrev = (currentImageIndex > 0);
             prevButton.gameObject.SetActive(hasPrev);
         }
-    }
+    }*/
 
     // =========================================================
     // --- NEW DASHBOARD VIEWER LOGIC ---
