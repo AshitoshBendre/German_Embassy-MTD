@@ -16,8 +16,12 @@ public class ImageButtonUI : MonoBehaviour
     {
         if(image == null)
             image = GetComponent<Image>();
-        btn = GetComponent<Button>();
-        btn.onClick.AddListener(OnClick);
+
+        if (image != null && image.sprite == null)
+        {
+            image.sprite = Sprite.Create(Texture2D.blackTexture, new Rect(0, 0, 1, 1), Vector2.zero);
+            image.color = new Color(1, 1, 1, 0); // Completely transparent
+        }
     }
     public void Initialize(GallerySectionView sectionView, string imageUrl, /*string titleText,*/ string fullFolderPath)
     {
@@ -38,7 +42,7 @@ public class ImageButtonUI : MonoBehaviour
             fullFolderPath,
             imageUrl,
             image);
-
+        if (image != null) image.color = Color.white;
         Debug.Log($"Loaded {imageUrl}");
     }
 
