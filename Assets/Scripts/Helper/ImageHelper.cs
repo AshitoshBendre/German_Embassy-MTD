@@ -1,3 +1,4 @@
+using System.Collections;
 using System.Collections.Generic;
 using System.IO;
 using System.Threading.Tasks;
@@ -9,129 +10,166 @@ namespace Helpers
 {
     public static class ImageHelper
     {
-        // Cache to store loaded images so we don't read from disk twice
         private static readonly Dictionary<string, Sprite> spriteCache = new();
+        private static ImageDispatcher _dispatcher;
+
+        // Lazy-load a hidden GameObject to run our Main-Thread Coroutine Queue
+        private static ImageDispatcher Dispatcher
+        {
+            get
+            {
+                if (_dispatcher == null)
+                {
+                    var go = new GameObject("[ImageHelper_FrameDispatcher]");
+                    Object.DontDestroyOnLoad(go);
+                    _dispatcher = go.AddComponent<ImageDispatcher>();
+                }
+                return _dispatcher;
+            }
+        }
 
         public static bool TryGetCachedSprite(string key, out Sprite sprite)
-        {
-            return spriteCache.TryGetValue(key, out sprite);
-        }
+            => spriteCache.TryGetValue(key, out sprite);
 
-        /// <summary>
-        /// Loads an image from StreamingAssets (or Cache), applies it to the UI Image, and preserves aspect ratio.
-        /// </summary>
         public static async Task LoadAndApplyImageAsync(string folderId, string imageURL, Image image)
         {
-            if (image == null)
-            {
-                Debug.LogWarning("[ImageHelper] Target Image component is null. Aborting load.");
-                return;
-            }
+            if (image == null) return;
 
             string cacheKey = $"{folderId}/{imageURL}";
-            Debug.Log($"[ImageHelper] Requesting image: {cacheKey}");
 
-            // 1. Check if we already have it in the cache
-            if (!spriteCache.TryGetValue(cacheKey, out var sprite))
+            if (!spriteCache.TryGetValue(cacheKey, out Sprite sprite))
             {
-                Debug.Log($"[ImageHelper] Image not in cache. Preloading: {cacheKey}");
-
-                // 2. Preload from disk
-                await PreloadImageAsync(folderId, imageURL);
-
-                // 3. Try grabbing it from the cache again
-                if (!spriteCache.TryGetValue(cacheKey, out sprite))
-                {
-                    Debug.LogError($"[ImageHelper] Final failure. Could not load or cache image: {cacheKey}");
-                    return;
-                }
-            }
-            else
-            {
-                Debug.Log($"[ImageHelper] Loaded successfully from cache: {cacheKey}");
+                sprite = await PreloadImageAsync(folderId, imageURL);
             }
 
-            // 4. Apply to image and ensure aspect ratio is preserved (No stretching!)
-            image.sprite = sprite;
-            image.preserveAspect = true;
-            Debug.Log($"[ImageHelper] Successfully applied sprite to Image component.");
+            // Safety check: The UI Object might have been destroyed while we were reading from the SSD!
+            if (sprite != null && image != null)
+            {
+                image.sprite = sprite;
+                image.preserveAspect = true;
+            }
         }
 
-        /// <summary>
-        /// Loads an image from disk using UnityWebRequest and stores it in the dictionary cache.
-        /// </summary>
-        public static async Task PreloadImageAsync(string folderId, string imageURL)
+        public static Task<Sprite> PreloadImageAsync(string folderId, string imageURL)
         {
             string cacheKey = $"{folderId}/{imageURL}";
 
-            if (spriteCache.ContainsKey(cacheKey))
-            {
-                Debug.Log($"[ImageHelper] Preload skipped, already cached: {cacheKey}");
-                return;
-            }
+            if (spriteCache.TryGetValue(cacheKey, out Sprite existing))
+                return Task.FromResult(existing);
 
             string filePath = Path.Combine(Application.streamingAssetsPath, folderId, imageURL);
-
             if (!File.Exists(filePath))
             {
-                Debug.LogError($"[ImageHelper] File does not exist at path: {filePath}");
-                return;
+                Debug.LogError($"[ImageHelper] File missing: {filePath}");
+                return Task.FromResult<Sprite>(null);
             }
 
-            string uri = "file://" + filePath;
-            Debug.Log($"[ImageHelper] Starting download from URI: {uri}");
-
-            using (UnityWebRequest uwr = UnityWebRequestTexture.GetTexture(uri))
-            {
-                var operation = uwr.SendWebRequest();
-
-                while (!operation.isDone)
-                {
-                    await Task.Yield();
-                }
-
-                if (uwr.result != UnityWebRequest.Result.Success)
-                {
-                    Debug.LogError($"[ImageHelper] WebRequest failed for {uri}. Error: {uwr.error}");
-                    return;
-                }
-
-                Texture2D texture = DownloadHandlerTexture.GetContent(uwr);
-
-                if (texture == null)
-                {
-                    Debug.LogError($"[ImageHelper] Failed to extract texture from WebRequest: {uri}");
-                    return;
-                }
-
-                Sprite sprite = Sprite.Create(
-                    texture,
-                    new Rect(0, 0, texture.width, texture.height),
-                    new Vector2(0.5f, 0.5f));
-
-                spriteCache[cacheKey] = sprite;
-                Debug.Log($"[ImageHelper] Successfully cached sprite: {cacheKey}");
-            }
+            // file:/// formats absolute Windows drive paths correctly (e.g. file:///C:/Project/...)
+            string uri = "file:///" + filePath.Replace("\\", "/");
+            return Dispatcher.Enqueue(uri, cacheKey, spriteCache);
         }
 
-        /// <summary>
-        /// Call this when exiting a gallery or switching projects to free up RAM.
-        /// </summary>
+        // Added specifically to fix your DashboardViewer's absolute paths
+        public static Task<Sprite> LoadSpriteFromAbsolutePathAsync(string absoluteFilePath)
+        {
+            string cacheKey = absoluteFilePath;
+            if (spriteCache.TryGetValue(cacheKey, out Sprite existing))
+                return Task.FromResult(existing);
+
+            if (!File.Exists(absoluteFilePath)) return Task.FromResult<Sprite>(null);
+
+            string uri = "file:///" + absoluteFilePath.Replace("\\", "/");
+            return Dispatcher.Enqueue(uri, cacheKey, spriteCache);
+        }
+
         public static void ClearCache()
         {
-            Debug.Log($"[ImageHelper] Clearing {spriteCache.Count} cached sprites to free memory.");
+            if (_dispatcher != null) _dispatcher.ClearQueue();
 
             foreach (var kvp in spriteCache)
             {
                 if (kvp.Value != null)
                 {
-                    // Destroy both the sprite and its underlying texture to prevent RAM leaks
                     if (kvp.Value.texture != null) Object.Destroy(kvp.Value.texture);
                     Object.Destroy(kvp.Value);
                 }
             }
-
             spriteCache.Clear();
+        }
+    }
+
+    // --- THE HIDDEN WORKER ---
+    internal class ImageDispatcher : MonoBehaviour
+    {
+        private struct Job
+        {
+            public string uri;
+            public string cacheKey;
+            public TaskCompletionSource<Sprite> tcs;
+            public Dictionary<string, Sprite> targetCache;
+        }
+
+        private readonly Queue<Job> _queue = new();
+        private bool _isWorking = false;
+
+        public Task<Sprite> Enqueue(string uri, string cacheKey, Dictionary<string, Sprite> cache)
+        {
+            var tcs = new TaskCompletionSource<Sprite>();
+            _queue.Enqueue(new Job { uri = uri, cacheKey = cacheKey, tcs = tcs, targetCache = cache });
+
+            if (!_isWorking) StartCoroutine(WorkLoop());
+            return tcs.Task;
+        }
+
+        public void ClearQueue()
+        {
+            foreach (var job in _queue) job.tcs.TrySetResult(null);
+            _queue.Clear();
+        }
+
+        private IEnumerator WorkLoop()
+        {
+            _isWorking = true;
+
+            while (_queue.Count > 0)
+            {
+                var job = _queue.Dequeue();
+
+                // If a duplicate UI request arrived while this sat in line, hand it the resolved sprite
+                if (job.targetCache.TryGetValue(job.cacheKey, out Sprite cached))
+                {
+                    job.tcs.TrySetResult(cached);
+                    continue;
+                }
+
+                using UnityWebRequest uwr = UnityWebRequestTexture.GetTexture(job.uri);
+                yield return uwr.SendWebRequest(); // Native C++ background thread IO!
+
+                if (uwr.result != UnityWebRequest.Result.Success)
+                {
+                    job.tcs.TrySetResult(null);
+                    continue;
+                }
+
+                Texture2D tex = DownloadHandlerTexture.GetContent(uwr);
+                if (tex != null)
+                {
+                    tex.Apply(false, true); // Instantly clears the CPU memory copy
+                    Sprite s = Sprite.Create(tex, new Rect(0, 0, tex.width, tex.height), new Vector2(0.5f, 0.5f));
+
+                    job.targetCache[job.cacheKey] = s;
+                    job.tcs.TrySetResult(s);
+                }
+                else
+                {
+                    job.tcs.TrySetResult(null);
+                }
+
+                // STRICT PACING: Force Unity to render the visual frame before doing the next image.
+                yield return null;
+            }
+
+            _isWorking = false;
         }
     }
 }

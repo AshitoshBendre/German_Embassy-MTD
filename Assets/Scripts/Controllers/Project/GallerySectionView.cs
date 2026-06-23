@@ -232,7 +232,7 @@ public class GallerySectionView : MonoBehaviour, IProjectSectionView
         }
     }
 
-    private void DisplayDashboardImage(int index)
+    private async void DisplayDashboardImage(int index)
     {
         if (index < 0 || index >= dashboardImagePaths.Count || dashboardImageView == null) return;
 
@@ -240,35 +240,22 @@ public class GallerySectionView : MonoBehaviour, IProjectSectionView
 
         if (File.Exists(imagePath))
         {
-            // CRITICAL: Destroy both the old sprite AND the old texture to prevent memory leaks
             if (currentDashboardSprite != null) Destroy(currentDashboardSprite);
-            if (currentDashboardTexture != null) Destroy(currentDashboardTexture);
 
-            // 1. Load the raw bytes into a Texture2D
-            byte[] fileData = File.ReadAllBytes(imagePath);
-            currentDashboardTexture = new Texture2D(2, 2);
-            currentDashboardTexture.LoadImage(fileData);
+            // Safely streams off disk instead of locking the thread with File.ReadAllBytes
+            currentDashboardSprite = await Helpers.ImageHelper.LoadSpriteFromAbsolutePathAsync(imagePath);
 
-            // 2. Convert the Texture2D into a UI Sprite
-            currentDashboardSprite = Sprite.Create(
-                currentDashboardTexture,
-                new Rect(0, 0, currentDashboardTexture.width, currentDashboardTexture.height),
-                new Vector2(0.5f, 0.5f) // Centers the pivot
-            );
-
-            // 3. Assign to the Image component
-            dashboardImageView.sprite = currentDashboardSprite;
-            dashboardImageView.preserveAspect = true;
-
-            // --- STRICT ASPECT RATIO FITTER ---
-            // This guarantees the image scales properly inside its parent bounds without stretching
-            AspectRatioFitter aspectFitter = dashboardImageView.GetComponent<AspectRatioFitter>();
-            if (aspectFitter == null)
+            if (dashboardImageView != null && currentDashboardSprite != null)
             {
-                aspectFitter = dashboardImageView.gameObject.AddComponent<AspectRatioFitter>();
+                dashboardImageView.sprite = currentDashboardSprite;
+                dashboardImageView.preserveAspect = true;
+
+                AspectRatioFitter aspectFitter = dashboardImageView.GetComponent<AspectRatioFitter>();
+                if (aspectFitter == null) aspectFitter = dashboardImageView.gameObject.AddComponent<AspectRatioFitter>();
+
+                aspectFitter.aspectMode = AspectRatioFitter.AspectMode.FitInParent;
+                aspectFitter.aspectRatio = currentDashboardSprite.rect.width / currentDashboardSprite.rect.height;
             }
-            aspectFitter.aspectMode = AspectRatioFitter.AspectMode.FitInParent;
-            aspectFitter.aspectRatio = (float)currentDashboardTexture.width / currentDashboardTexture.height;
         }
 
         UpdateDashboardButtons();
@@ -378,31 +365,20 @@ public class GallerySectionView : MonoBehaviour, IProjectSectionView
         }
     }
 
-    private async void StartGalleryPreload(ProjectContext projectContext)
+    private void StartGalleryPreload(ProjectContext projectContext)
     {
         GalleryTabData galleryTabData = projectContext.Data.galleryTabData;
-
-        if (galleryTabData?.galleryDatas == null)
-            return;
+        if (galleryTabData?.galleryDatas == null) return;
 
         string fullFolderPath = $"{projectContext.PanelFolderId}/{projectContext.ProjectFolderId}";
 
-        List<Task> preloadTasks = new();
-
         foreach (var galleryData in galleryTabData.galleryDatas)
         {
-            if (!IsGalleryDataValid(galleryData))
-                continue;
+            if (!IsGalleryDataValid(galleryData)) continue;
 
-            preloadTasks.Add(
-                Helpers.ImageHelper.PreloadImageAsync(
-                    fullFolderPath,
-                    galleryData.imageURL));
+            // Shove into the background queue; do not sit here and await it!
+            _ = Helpers.ImageHelper.PreloadImageAsync(fullFolderPath, galleryData.imageURL);
         }
-
-        await Task.WhenAny(
-            Task.WhenAll(preloadTasks),
-            Task.Delay(1000));
     }
 
     private bool IsGalleryDataValid(GalleryData galleryData)
