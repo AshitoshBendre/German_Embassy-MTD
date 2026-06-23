@@ -63,7 +63,6 @@ public class GallerySectionView : MonoBehaviour, IProjectSectionView
 
     private async void ImageGridBuilder(List<GalleryData> data)
     {
-        List<ImageButtonUI> buttons = new();
         List<RectTransform> generatedRects = new List<RectTransform>();
         validGalleryList.Clear();
         if (carousel != null) carousel.ClearItems();
@@ -72,47 +71,46 @@ public class GallerySectionView : MonoBehaviour, IProjectSectionView
         {
             Destroy(child.gameObject);
         }
-        LayoutGroup layoutGroup = gridcontentContainer.GetComponent<LayoutGroup>();
 
-        if (layoutGroup != null)
-            layoutGroup.enabled = false;
+        LayoutGroup layoutGroup = gridcontentContainer.GetComponent<LayoutGroup>();
+        if (layoutGroup != null) layoutGroup.enabled = false;
+
         int count = 0;
+        string fullFolderPath = $"{projectContext.PanelFolderId}/{projectContext.ProjectFolderId}";
+
         foreach (var galleryData in data)
         {
-            if (!IsGalleryDataValid(galleryData))
-                continue;
+            if (!IsGalleryDataValid(galleryData)) continue;
 
             validGalleryList.Add(galleryData);
 
             var imageObj = Instantiate(imageButtonPrefab, gridcontentContainer);
             generatedRects.Add(imageObj.GetComponent<RectTransform>());
-            string fullFolderPath = $"{projectContext.PanelFolderId}/{projectContext.ProjectFolderId}";
+
             imageObj.AddComponent<CarouselButton>();
             var imageBtnUI = imageObj.GetComponent<ImageButtonUI>();
 
-            imageBtnUI.Initialize(
-                this,
-                galleryData.imageURL,
-                //galleryData.titleText,
-                fullFolderPath);
+            imageBtnUI.Initialize(this, galleryData.imageURL, fullFolderPath);
             imageObj.gameObject.name = $"Image {count}";
-            buttons.Add(imageBtnUI);
+
+            // Fire image load instantly without awaiting it to unblock the loop
+            _ = imageBtnUI.LoadImageButton();
+
             count++;
+
+            // TIME-SLICING: Every 3 buttons instantiated, yield a frame to let Canvas Layout breathe
+            if (count % 3 == 0)
+            {
+                await Task.Yield();
+            }
         }
 
         if (carousel != null)
         {
             carousel.SetItems(generatedRects);
             carousel.StartItem = generatedRects.Count / 2;
+            carousel.ForceUpdate();
         }
-        /*if (layoutGroup != null)
-        {
-            layoutGroup.enabled = true;
-            LayoutRebuilder.ForceRebuildLayoutImmediate(gridcontentContainer as RectTransform);
-        }*/
-
-        await Task.Yield();
-        await LoadButtonsInBatches(buttons, 1);
     }
 
     private async Task LoadButtonsInBatches(List<ImageButtonUI> buttons, int batchSize = 1)
@@ -360,7 +358,7 @@ public class GallerySectionView : MonoBehaviour, IProjectSectionView
                 }
             }
 
-            StartGalleryPreload(projectContext);
+            //StartGalleryPreload(projectContext);
             TabButton.SetActive(shouldShowTab);
         }
     }

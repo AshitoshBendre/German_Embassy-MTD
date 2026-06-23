@@ -34,10 +34,10 @@
     "reportsTabData": {
         "reportDatas": [
             {
-                "pdfURL": "Reports/BH10_Parking & Vending Management Plan",
+                "pdfURL": "Reports/PDF1",
                 "titleText": "Parking & Vending Management Plan"
             },{
-                "pdfURL": "Reports/BH11_State Parking Policy Alignment and Implementation",
+                "pdfURL": "Reports/PDF2",
                 "titleText": "State Parking Policy Alignment and Implementation"
             }
         ]
