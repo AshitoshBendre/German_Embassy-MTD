@@ -442,7 +442,7 @@ GameObject:
   - component: {fileID: 40524924}
   - component: {fileID: 40524923}
   m_Layer: 5
-  m_Name: Button 2
+  m_Name: SUM VIDEO BTN
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
@@ -2595,7 +2595,7 @@ VideoPlayer:
   m_DataSource: 1
   m_TimeUpdateMode: 2
   m_PlaybackSpeed: 1
-  m_AudioOutputMode: 2
+  m_AudioOutputMode: 0
   m_TargetAudioSources:
   - {fileID: 0}
   m_DirectAudioVolumes:
@@ -3170,7 +3170,7 @@ GameObject:
   - component: {fileID: 195118816}
   - component: {fileID: 195118815}
   m_Layer: 5
-  m_Name: Button 1
+  m_Name: SUM VIDEO BTN
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
@@ -25214,7 +25214,7 @@ VideoPlayer:
   m_DataSource: 1
   m_TimeUpdateMode: 2
   m_PlaybackSpeed: 1
-  m_AudioOutputMode: 2
+  m_AudioOutputMode: 0
   m_TargetAudioSources:
   - {fileID: 0}
   m_DirectAudioVolumes:
@@ -27105,7 +27105,7 @@ GameObject:
   - component: {fileID: 1419761646}
   - component: {fileID: 1419761645}
   m_Layer: 5
-  m_Name: Button 3
+  m_Name: SUM VIDEO BTN
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
@@ -30953,7 +30953,7 @@ VideoPlayer:
   m_DataSource: 1
   m_TimeUpdateMode: 2
   m_PlaybackSpeed: 1
-  m_AudioOutputMode: 2
+  m_AudioOutputMode: 0
   m_TargetAudioSources:
   - {fileID: 0}
   m_DirectAudioVolumes:
