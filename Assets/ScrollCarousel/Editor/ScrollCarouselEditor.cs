@@ -8,7 +8,7 @@ namespace ScrollCarousel
     public class ScrollCarouselEditor : Editor
     {
         private Carousel carousel;
-        
+
         public override void OnInspectorGUI()
         {
             serializedObject.Update();
@@ -16,49 +16,75 @@ namespace ScrollCarousel
             carousel = (Carousel)target;
 
             GUILayout.BeginVertical("box");
-            GUILayout.Label("Carousel Editor", EditorStyles.boldLabel);
-            
+            GUILayout.Label("Carousel Actions", EditorStyles.boldLabel);
+
             if (GUILayout.Button("Add All Children to Items"))
             {
                 AddAllChildrenToItemList();
             }
 
-            if (GUILayout.Button("Organize Items"))
+            if (GUILayout.Button("Organize Items (Preview Layout)"))
             {
+                // Record undo state so the dev can hit Ctrl+Z if they don't like the snap
+                Undo.RecordObject(carousel, "Organize Carousel Items");
+                foreach (var item in carousel.Items)
+                {
+                    if (item != null) Undo.RecordObject(item, "Organize Carousel Items");
+                }
+
                 OrganizeItemsInEditor();
                 UpdateItemsAppearanceInEditor();
-                OrganizeItemsInEditor();
+                OrganizeItemsInEditor(); // Double pass guarantees locked-in math
             }
 
             GUILayout.EndVertical();
 
+            EditorGUILayout.Space(5);
+
+            // 1. Layout Mode
+            SerializedProperty modeProp = serializedObject.FindProperty("Mode");
+            EditorGUILayout.PropertyField(modeProp);
+
+            if (modeProp.enumValueIndex == (int)CarouselMode.Infinite)
+            {
+                EditorGUILayout.PropertyField(serializedObject.FindProperty("CircleRadius"));
+            }
+
             EditorGUILayout.PropertyField(serializedObject.FindProperty("Items"));
             EditorGUILayout.PropertyField(serializedObject.FindProperty("StartItem"));
             EditorGUILayout.PropertyField(serializedObject.FindProperty("Itemspacing"));
+
+            EditorGUILayout.Space(5);
+            EditorGUILayout.LabelField("Appearance", EditorStyles.boldLabel);
             EditorGUILayout.PropertyField(serializedObject.FindProperty("CenteredScale"));
             EditorGUILayout.PropertyField(serializedObject.FindProperty("NonCenteredScale"));
             EditorGUILayout.PropertyField(serializedObject.FindProperty("MaxRotationAngle"));
             EditorGUILayout.PropertyField(serializedObject.FindProperty("_rotationSmoothSpeed"));
             EditorGUILayout.PropertyField(serializedObject.FindProperty("_snapSpeed"));
 
-            EditorGUILayout.PropertyField(serializedObject.FindProperty("InfiniteScroll"));
-            if (serializedObject.FindProperty("InfiniteScroll").boolValue)
+            EditorGUILayout.Space(5);
+            SerializedProperty colorAnimProp = serializedObject.FindProperty("ColorAnimation");
+            EditorGUILayout.PropertyField(colorAnimProp);
+            if (colorAnimProp.boolValue)
             {
-                EditorGUILayout.PropertyField(serializedObject.FindProperty("CircleRadius"));
-            }
-            EditorGUILayout.PropertyField(serializedObject.FindProperty("ColorAnimation"));
-            if (serializedObject.FindProperty("ColorAnimation").boolValue)
-            {
+                EditorGUI.indentLevel++;
                 EditorGUILayout.PropertyField(serializedObject.FindProperty("FocustedColor"));
                 EditorGUILayout.PropertyField(serializedObject.FindProperty("NonFocustedColor"));
+                EditorGUI.indentLevel--;
             }
+
+            EditorGUILayout.Space(5);
+            EditorGUILayout.LabelField("Internal References", EditorStyles.boldLabel);
+            EditorGUILayout.PropertyField(serializedObject.FindProperty("_rectTransform"));
 
             serializedObject.ApplyModifiedProperties();
         }
 
         private void AddAllChildrenToItemList()
         {
+            Undo.RecordObject(carousel, "Add All Children to Carousel");
             carousel.Items.Clear();
+
             foreach (Transform child in carousel.transform)
             {
                 if (child is RectTransform rectTransform)
@@ -71,14 +97,16 @@ namespace ScrollCarousel
 
         private void OrganizeItemsInEditor()
         {
+            carousel.Items.RemoveAll(x => x == null); // Purge editor nulls instantly
             if (carousel.Items.Count == 0) return;
 
-            Vector2 centerPoint = carousel.GetComponent<RectTransform>().rect.center;
+            RectTransform baseRect = carousel.GetComponent<RectTransform>();
+            Vector2 centerPoint = baseRect != null ? baseRect.rect.center : Vector2.zero;
 
             for (int i = 0; i < carousel.Items.Count; i++)
             {
                 Vector2 targetPosition;
-                if (carousel.InfiniteScroll)
+                if (carousel.Mode == CarouselMode.Infinite)
                 {
                     float angle = (360f / carousel.Items.Count) * (i - carousel.StartItem);
                     float radians = angle * Mathf.Deg2Rad;
@@ -87,13 +115,19 @@ namespace ScrollCarousel
                         centerPoint.y + (1 - Mathf.Cos(radians)) * carousel.CircleRadius * 0.5f
                     );
                 }
-                else
+                else if (carousel.Mode == CarouselMode.Vertical)
                 {
-                    float offset = GetTotalOffset(i) - GetTotalOffset(carousel.StartItem);
+                    float offset = GetTotalOffset(i, false) - GetTotalOffset(carousel.StartItem, false);
+                    targetPosition = new Vector2(centerPoint.x, centerPoint.y + offset);
+                }
+                else // Horizontal
+                {
+                    float offset = GetTotalOffset(i, true) - GetTotalOffset(carousel.StartItem, true);
                     targetPosition = new Vector2(centerPoint.x + offset, centerPoint.y);
                 }
 
                 carousel.Items[i].anchoredPosition = targetPosition;
+                EditorUtility.SetDirty(carousel.Items[i]);
             }
 
             EditorUtility.SetDirty(carousel);
@@ -103,24 +137,34 @@ namespace ScrollCarousel
         {
             if (carousel.Items.Count == 0) return;
 
-            Vector2 centerPoint = carousel.GetComponent<RectTransform>().rect.center;
-            float maxDistance = carousel.InfiniteScroll ? carousel.CircleRadius : GetItemspacing(0);
+            RectTransform baseRect = carousel.GetComponent<RectTransform>();
+            Vector2 centerPoint = baseRect != null ? baseRect.rect.center : Vector2.zero;
+
+            float maxDistance;
+            if (carousel.Mode == CarouselMode.Infinite) maxDistance = carousel.CircleRadius;
+            else if (carousel.Mode == CarouselMode.Vertical) maxDistance = GetItemSpacing(0, false);
+            else maxDistance = GetItemSpacing(0, true);
+
+            if (maxDistance == 0) maxDistance = 1f;
 
             for (int i = 0; i < carousel.Items.Count; i++)
             {
                 if (!carousel.Items[i]) continue;
 
-                // Update visual sorting order based on distance from center
                 float visualDistance = Mathf.Abs(i - carousel.StartItem);
                 carousel.Items[i].SetSiblingIndex(carousel.Items.Count - (int)(visualDistance * 2));
 
                 float distance;
-                if (carousel.InfiniteScroll)
+                if (carousel.Mode == CarouselMode.Infinite)
                 {
                     float angle = (360f / carousel.Items.Count) * (i - carousel.StartItem);
                     distance = Mathf.Abs(angle) * carousel.CircleRadius / 180f;
                 }
-                else
+                else if (carousel.Mode == CarouselMode.Vertical)
+                {
+                    distance = Mathf.Abs(carousel.Items[i].anchoredPosition.y - centerPoint.y);
+                }
+                else // Horizontal
                 {
                     distance = Mathf.Abs(carousel.Items[i].anchoredPosition.x - centerPoint.x);
                 }
@@ -130,46 +174,56 @@ namespace ScrollCarousel
                 // Scale
                 float targetScale = i == carousel.StartItem ? carousel.CenteredScale : carousel.NonCenteredScale;
                 Vector3 newScale = new Vector3(targetScale, targetScale, 1f);
-                if (!float.IsNaN(newScale.x) && !float.IsNaN(newScale.y))
-                {
-                    carousel.Items[i].localScale = newScale;
-                }
+                if (!float.IsNaN(newScale.x)) carousel.Items[i].localScale = newScale;
 
                 // Rotation
-                float rotationSign = (carousel.Items[i].anchoredPosition.x > centerPoint.x) ? 1f : -1f;
-                float targetRotationY = carousel.MaxRotationAngle * normalizedDistance * rotationSign;
-                if (!float.IsNaN(targetRotationY))
+                if (carousel.Mode == CarouselMode.Vertical)
                 {
-                    carousel.Items[i].localRotation = Quaternion.Euler(30, targetRotationY, 0);
+                    float rotationSign = (carousel.Items[i].anchoredPosition.y > centerPoint.y) ? -1f : 1f;
+                    float targetRotationX = carousel.MaxRotationAngle * normalizedDistance * rotationSign;
+                    if (!float.IsNaN(targetRotationX))
+                        carousel.Items[i].localRotation = Quaternion.Euler(targetRotationX, 0, 0);
                 }
+                else
+                {
+                    float rotationSign = (carousel.Items[i].anchoredPosition.x > centerPoint.x) ? 1f : -1f;
+                    float targetRotationY = carousel.MaxRotationAngle * normalizedDistance * rotationSign;
+                    if (!float.IsNaN(targetRotationY))
+                        carousel.Items[i].localRotation = Quaternion.Euler(30, targetRotationY, 0);
+                }
+
+                EditorUtility.SetDirty(carousel.Items[i]);
             }
-
-            EditorUtility.SetDirty(carousel);
         }
 
-        private float GetItemspacing(int index)
+        private float GetItemSpacing(int index, bool isHorizontal)
         {
-            float currentItemscale = (index == carousel.StartItem) ? carousel.CenteredScale : carousel.NonCenteredScale;
-            float nextItemscale = (index + 1 == carousel.StartItem) ? carousel.CenteredScale : carousel.NonCenteredScale;
-            
-            float currentWidth = carousel.Items[index].rect.width * currentItemscale;
-            float nextWidth = carousel.Items[index + 1].rect.width * nextItemscale;
-            
-            return (currentWidth + nextWidth) / 2 + carousel.Itemspacing;
+            float currentItemScale = (index == carousel.StartItem) ? carousel.CenteredScale : carousel.NonCenteredScale;
+            float currentSize = isHorizontal ? carousel.Items[index].rect.width : carousel.Items[index].rect.height;
+            currentSize *= currentItemScale;
+
+            if (index + 1 >= carousel.Items.Count) return currentSize + carousel.Itemspacing;
+
+            float nextItemScale = (index + 1 == carousel.StartItem) ? carousel.CenteredScale : carousel.NonCenteredScale;
+            float nextSize = isHorizontal ? carousel.Items[index + 1].rect.width : carousel.Items[index + 1].rect.height;
+            nextSize *= nextItemScale;
+
+            return (currentSize + nextSize) / 2f + carousel.Itemspacing;
         }
 
-        private float GetTotalOffset(int index)
+        private float GetTotalOffset(int index, bool isHorizontal)
         {
             float offset = 0f;
             int startIdx = Math.Min(index, carousel.StartItem);
             int endIdx = Math.Max(index, carousel.StartItem);
-            
+
             for (int i = startIdx; i < endIdx; i++)
             {
-                offset += GetItemspacing(i);
+                offset += GetItemSpacing(i, isHorizontal);
             }
-            
-            return index < carousel.StartItem ? -offset : offset;
+
+            if (isHorizontal) return index < carousel.StartItem ? -offset : offset;
+            else return index < carousel.StartItem ? offset : -offset;
         }
     }
 }

@@ -10,7 +10,7 @@ using UnityEngine.UI;
 public class GallerySectionView : MonoBehaviour, IProjectSectionView
 {
     [Header("Top Section")]
-    [SerializeField] private Image imageView;
+    //[SerializeField] private Image imageView;
     [SerializeField] private Carousel carousel;
     /*[SerializeField] private TMP_Text imagecaption;*/
 
@@ -22,9 +22,9 @@ public class GallerySectionView : MonoBehaviour, IProjectSectionView
     [SerializeField] private GameObject TabButton;
     [SerializeField] private Button backButton;
 
-    [Header("Navigation Controls")]
+    /*[Header("Navigation Controls")]
     [SerializeField] private Button nextButton;
-    [SerializeField] private Button prevButton;
+    [SerializeField] private Button prevButton;*/
 
     [Header("Dashboard Viewer (New)")]
     [SerializeField] private string projectID;
@@ -64,8 +64,9 @@ public class GallerySectionView : MonoBehaviour, IProjectSectionView
     private async void ImageGridBuilder(List<GalleryData> data)
     {
         List<ImageButtonUI> buttons = new();
-        List<RectTransform> rectTransform = new List<RectTransform>();
+        List<RectTransform> generatedRects = new List<RectTransform>();
         validGalleryList.Clear();
+        if (carousel != null) carousel.ClearItems();
 
         foreach (Transform child in gridcontentContainer)
         {
@@ -75,7 +76,7 @@ public class GallerySectionView : MonoBehaviour, IProjectSectionView
 
         if (layoutGroup != null)
             layoutGroup.enabled = false;
-
+        int count = 0;
         foreach (var galleryData in data)
         {
             if (!IsGalleryDataValid(galleryData))
@@ -84,7 +85,7 @@ public class GallerySectionView : MonoBehaviour, IProjectSectionView
             validGalleryList.Add(galleryData);
 
             var imageObj = Instantiate(imageButtonPrefab, gridcontentContainer);
-            rectTransform.Add(imageObj.GetComponent<RectTransform>());
+            generatedRects.Add(imageObj.GetComponent<RectTransform>());
             string fullFolderPath = $"{projectContext.PanelFolderId}/{projectContext.ProjectFolderId}";
             imageObj.AddComponent<CarouselButton>();
             var imageBtnUI = imageObj.GetComponent<ImageButtonUI>();
@@ -94,13 +95,15 @@ public class GallerySectionView : MonoBehaviour, IProjectSectionView
                 galleryData.imageURL,
                 //galleryData.titleText,
                 fullFolderPath);
-
+            imageObj.gameObject.name = $"Image {count}";
             buttons.Add(imageBtnUI);
+            count++;
         }
 
         if (carousel != null)
         {
-            carousel.Items.AddRange(rectTransform);
+            carousel.SetItems(generatedRects);
+            carousel.StartItem = generatedRects.Count / 2;
         }
         /*if (layoutGroup != null)
         {
@@ -114,6 +117,8 @@ public class GallerySectionView : MonoBehaviour, IProjectSectionView
 
     private async Task LoadButtonsInBatches(List<ImageButtonUI> buttons, int batchSize = 1)
     {
+        if (carousel != null)
+            carousel.ForceUpdate();
         for (int i = 0; i < buttons.Count; i += batchSize)
         {
             List<Task> batch = new();
@@ -124,8 +129,9 @@ public class GallerySectionView : MonoBehaviour, IProjectSectionView
             }
 
             await Task.WhenAll(batch);
-            await Task.Delay(500);
+            await Task.Delay(1);
         }
+        
     }
 
 /*    public void ShowPhotoOnMainImageRect(string imageURL, string titleText)
