@@ -105,10 +105,12 @@ public class GallerySectionView : MonoBehaviour, IProjectSectionView
             }
         }
 
-        if (carousel != null)
+        if (carousel != null && generatedRects.Count > 0)
         {
-            carousel.SetItems(generatedRects);
-            carousel.StartItem = generatedRects.Count / 2;
+            int calculatedStart = generatedRects.Count / 2;
+
+            carousel.StartItem = calculatedStart;  
+            carousel.SetItems(generatedRects); 
             carousel.ForceUpdate();
         }
     }
