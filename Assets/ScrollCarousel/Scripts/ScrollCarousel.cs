@@ -59,6 +59,7 @@ namespace ScrollCarousel
         private float _currentRotationOffset = 0f;
         private Vector2 _totalDragDelta; // <--- Tracks the cumulative momentum of a swipe
         private Dictionary<RectTransform, Coroutine> _activeColorAnimations = new Dictionary<RectTransform, Coroutine>();
+        private List<(RectTransform item, float distance)> _depthSortBuffer = new();
 
         private void Awake()
         {
@@ -170,6 +171,8 @@ namespace ScrollCarousel
             float minDistance = float.MaxValue;
             int closestIndex = -1;
 
+            _depthSortBuffer.Clear(); // Clear our zero-allocation buffer
+
             for (int i = 0; i < Items.Count; i++)
             {
                 if (!Items[i]) continue;
@@ -200,15 +203,17 @@ namespace ScrollCarousel
                     closestIndex = i;
                 }
 
-                Items[i].SetSiblingIndex(Items.Count - (int)(angleDistance * 2));
+                // 1. Capture the item and its true physical distance this frame
+                _depthSortBuffer.Add((Items[i], distance));
+
                 float normalizedDistance = Mathf.Clamp01(distance / maxDistance);
 
-                // Scale
+                // --- Scale ---
                 float targetScale = Mathf.Lerp(CenteredScale, NonCenteredScale, normalizedDistance);
                 Vector3 newScale = new Vector3(targetScale, targetScale, 1f);
                 if (!float.IsNaN(newScale.x)) Items[i].localScale = newScale;
 
-                // Rotation
+                // --- Rotation ---
                 if (Mode == CarouselMode.Vertical)
                 {
                     float rotationSign = (Items[i].anchoredPosition.y > centerPoint.y) ? -1f : 1f;
@@ -229,6 +234,16 @@ namespace ScrollCarousel
                 }
             }
 
+            // 2. Sort buffer DESCENDING (Furthest distance first -> Closest distance last)
+            // (Using a C# 9 'static' lambda guarantees no hidden closure memory allocations)
+            _depthSortBuffer.Sort(static (a, b) => b.distance.CompareTo(a.distance));
+
+            // 3. Render stack push. The closest item gets pushed last, putting it on top.
+            foreach (var entry in _depthSortBuffer)
+            {
+                entry.item.SetAsLastSibling();
+            }
+
             if (ColorAnimation && closestIndex != -1)
             {
                 for (int i = 0; i < Items.Count; i++)
@@ -240,7 +255,7 @@ namespace ScrollCarousel
             }
         }
 
-       
+
         public void OnBeginDrag(PointerEventData eventData)
         {
             _isSnapping = false;
