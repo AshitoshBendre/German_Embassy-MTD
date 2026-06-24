@@ -15,7 +15,7 @@ public class ScreenSaverMonitor : MonoBehaviour
     public string configFileName = "ScreenSaverConfig.json";
 
     private Vector3 _lastMousePosition;
-    private bool _isMediaPlaying = false;
+    public bool _isMediaPlaying = false;
 
     // Track the active coroutine from the GlobalTimer so we can stop/reset it
     private Coroutine _idleTimerCoroutine;

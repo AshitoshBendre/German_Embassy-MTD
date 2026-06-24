@@ -617,6 +617,18 @@ MonoBehaviour:
           m_StringArgument: 
           m_BoolArgument: 0
         m_CallState: 2
+      - m_Target: {fileID: 147551348}
+        m_TargetAssemblyTypeName: ScreenSaverMonitor, Assembly-CSharp
+        m_MethodName: SetMediaPlayingState
+        m_Mode: 6
+        m_Arguments:
+          m_ObjectArgument: {fileID: 0}
+          m_ObjectArgumentAssemblyTypeName: UnityEngine.Object, UnityEngine
+          m_IntArgument: 0
+          m_FloatArgument: 0
+          m_StringArgument: 
+          m_BoolArgument: 1
+        m_CallState: 2
 --- !u!114 &40524924
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -2326,6 +2338,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   idleTimeout: 120
   configFileName: ScreenSaverConfig.json
+  _isMediaPlaying: 0
 --- !u!1 &148096531
 GameObject:
   m_ObjectHideFlags: 0
@@ -3191,6 +3204,18 @@ MonoBehaviour:
           m_FloatArgument: 0
           m_StringArgument: 
           m_BoolArgument: 0
+        m_CallState: 2
+      - m_Target: {fileID: 147551348}
+        m_TargetAssemblyTypeName: ScreenSaverMonitor, Assembly-CSharp
+        m_MethodName: SetMediaPlayingState
+        m_Mode: 6
+        m_Arguments:
+          m_ObjectArgument: {fileID: 0}
+          m_ObjectArgumentAssemblyTypeName: UnityEngine.Object, UnityEngine
+          m_IntArgument: 0
+          m_FloatArgument: 0
+          m_StringArgument: 
+          m_BoolArgument: 1
         m_CallState: 2
 --- !u!114 &195118816
 MonoBehaviour:
@@ -7302,6 +7327,18 @@ MonoBehaviour:
           m_FloatArgument: 0
           m_StringArgument: 
           m_BoolArgument: 1
+        m_CallState: 2
+      - m_Target: {fileID: 147551348}
+        m_TargetAssemblyTypeName: ScreenSaverMonitor, Assembly-CSharp
+        m_MethodName: SetMediaPlayingState
+        m_Mode: 6
+        m_Arguments:
+          m_ObjectArgument: {fileID: 0}
+          m_ObjectArgumentAssemblyTypeName: UnityEngine.Object, UnityEngine
+          m_IntArgument: 0
+          m_FloatArgument: 0
+          m_StringArgument: 
+          m_BoolArgument: 0
         m_CallState: 2
 --- !u!114 &406602958
 MonoBehaviour:
@@ -15481,6 +15518,18 @@ MonoBehaviour:
           m_StringArgument: 
           m_BoolArgument: 0
         m_CallState: 2
+      - m_Target: {fileID: 147551348}
+        m_TargetAssemblyTypeName: ScreenSaverMonitor, Assembly-CSharp
+        m_MethodName: SetMediaPlayingState
+        m_Mode: 6
+        m_Arguments:
+          m_ObjectArgument: {fileID: 0}
+          m_ObjectArgumentAssemblyTypeName: UnityEngine.Object, UnityEngine
+          m_IntArgument: 0
+          m_FloatArgument: 0
+          m_StringArgument: 
+          m_BoolArgument: 0
+        m_CallState: 2
 --- !u!114 &793306369
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -17125,6 +17174,18 @@ MonoBehaviour:
           m_StringArgument: 
           m_BoolArgument: 1
         m_CallState: 2
+      - m_Target: {fileID: 147551348}
+        m_TargetAssemblyTypeName: ScreenSaverMonitor, Assembly-CSharp
+        m_MethodName: SetMediaPlayingState
+        m_Mode: 6
+        m_Arguments:
+          m_ObjectArgument: {fileID: 0}
+          m_ObjectArgumentAssemblyTypeName: UnityEngine.Object, UnityEngine
+          m_IntArgument: 0
+          m_FloatArgument: 0
+          m_StringArgument: 
+          m_BoolArgument: 0
+        m_CallState: 2
 --- !u!114 &852597739
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -18316,6 +18377,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   idleTimeout: 20
   configFileName: ScreenSaverConfig.json
+  _isMediaPlaying: 0
 --- !u!1 &938351906
 GameObject:
   m_ObjectHideFlags: 0
@@ -26567,6 +26629,18 @@ MonoBehaviour:
           m_StringArgument: 
           m_BoolArgument: 1
         m_CallState: 2
+      - m_Target: {fileID: 147551348}
+        m_TargetAssemblyTypeName: ScreenSaverMonitor, Assembly-CSharp
+        m_MethodName: SetMediaPlayingState
+        m_Mode: 6
+        m_Arguments:
+          m_ObjectArgument: {fileID: 0}
+          m_ObjectArgumentAssemblyTypeName: UnityEngine.Object, UnityEngine
+          m_IntArgument: 0
+          m_FloatArgument: 0
+          m_StringArgument: 
+          m_BoolArgument: 1
+        m_CallState: 2
 --- !u!114 &1393152435
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -27478,6 +27552,18 @@ MonoBehaviour:
           m_FloatArgument: 0
           m_StringArgument: 
           m_BoolArgument: 0
+        m_CallState: 2
+      - m_Target: {fileID: 147551348}
+        m_TargetAssemblyTypeName: ScreenSaverMonitor, Assembly-CSharp
+        m_MethodName: SetMediaPlayingState
+        m_Mode: 6
+        m_Arguments:
+          m_ObjectArgument: {fileID: 0}
+          m_ObjectArgumentAssemblyTypeName: UnityEngine.Object, UnityEngine
+          m_IntArgument: 0
+          m_FloatArgument: 0
+          m_StringArgument: 
+          m_BoolArgument: 1
         m_CallState: 2
 --- !u!114 &1419761646
 MonoBehaviour:
@@ -28676,6 +28762,18 @@ MonoBehaviour:
           m_FloatArgument: 0
           m_StringArgument: 
           m_BoolArgument: 1
+        m_CallState: 2
+      - m_Target: {fileID: 147551348}
+        m_TargetAssemblyTypeName: ScreenSaverMonitor, Assembly-CSharp
+        m_MethodName: SetMediaPlayingState
+        m_Mode: 6
+        m_Arguments:
+          m_ObjectArgument: {fileID: 0}
+          m_ObjectArgumentAssemblyTypeName: UnityEngine.Object, UnityEngine
+          m_IntArgument: 0
+          m_FloatArgument: 0
+          m_StringArgument: 
+          m_BoolArgument: 0
         m_CallState: 2
 --- !u!114 &1472739120
 MonoBehaviour:
