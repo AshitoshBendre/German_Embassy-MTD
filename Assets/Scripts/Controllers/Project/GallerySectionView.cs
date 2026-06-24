@@ -132,61 +132,60 @@ public class GallerySectionView : MonoBehaviour, IProjectSectionView
         
     }
 
-/*    public void ShowPhotoOnMainImageRect(string imageURL, string titleText)
-    {
-        if (backButton != null)
+    /*    public void ShowPhotoOnMainImageRect(string imageURL, string titleText)
         {
-            backButton.gameObject.SetActive(false);
+            if (backButton != null)
+            {
+                backButton.gameObject.SetActive(false);
+            }
+
+            popupPanel.SetActive(true);
+            string fullFolderPath = $"{projectContext.PanelFolderId}/{projectContext.ProjectFolderId}";
+            *//*imagecaption.text = titleText;*//*
+            Helpers.ImageHelper.LoadAndApplyImageAsync(fullFolderPath, imageURL, imageView);
+
+            currentImageIndex = validGalleryList.FindIndex(x => x.imageURL == imageURL);
+            UpdateButtonStates();
+        }*/
+    /*
+        public void ShowNextImage()
+        {
+            if (currentImageIndex >= 0 && currentImageIndex < validGalleryList.Count - 1)
+            {
+                currentImageIndex++;
+                GalleryData data = validGalleryList[currentImageIndex];
+                ShowPhotoOnMainImageRect(data.imageURL, data.titleText);
+            }
         }
 
-        popupPanel.SetActive(true);
-        string fullFolderPath = $"{projectContext.PanelFolderId}/{projectContext.ProjectFolderId}";
-        *//*imagecaption.text = titleText;*//*
-        Helpers.ImageHelper.LoadAndApplyImageAsync(fullFolderPath, imageURL, imageView);
-
-        currentImageIndex = validGalleryList.FindIndex(x => x.imageURL == imageURL);
-        UpdateButtonStates();
-    }*/
-/*
-    public void ShowNextImage()
-    {
-        if (currentImageIndex >= 0 && currentImageIndex < validGalleryList.Count - 1)
+        public void ShowPreviousImage()
         {
-            currentImageIndex++;
-            GalleryData data = validGalleryList[currentImageIndex];
-            ShowPhotoOnMainImageRect(data.imageURL, data.titleText);
-        }
-    }
-
-    public void ShowPreviousImage()
-    {
-        if (currentImageIndex > 0)
-        {
-            currentImageIndex--;
-            GalleryData data = validGalleryList[currentImageIndex];
-            ShowPhotoOnMainImageRect(data.imageURL, data.titleText);
-        }
-    }
-
-    private void UpdateButtonStates()
-    {
-        if (nextButton != null)
-        {
-            bool hasNext = (currentImageIndex >= 0 && currentImageIndex < validGalleryList.Count - 1);
-            nextButton.gameObject.SetActive(hasNext);
+            if (currentImageIndex > 0)
+            {
+                currentImageIndex--;
+                GalleryData data = validGalleryList[currentImageIndex];
+                ShowPhotoOnMainImageRect(data.imageURL, data.titleText);
+            }
         }
 
-        if (prevButton != null)
+        private void UpdateButtonStates()
         {
-            bool hasPrev = (currentImageIndex > 0);
-            prevButton.gameObject.SetActive(hasPrev);
-        }
-    }*/
+            if (nextButton != null)
+            {
+                bool hasNext = (currentImageIndex >= 0 && currentImageIndex < validGalleryList.Count - 1);
+                nextButton.gameObject.SetActive(hasNext);
+            }
+
+            if (prevButton != null)
+            {
+                bool hasPrev = (currentImageIndex > 0);
+                prevButton.gameObject.SetActive(hasPrev);
+            }
+        }*/
 
     // =========================================================
     // --- NEW DASHBOARD VIEWER LOGIC ---
     // =========================================================
-
     public void OpenDashboardViewer()
     {
         dashboardViewerPanel.SetActive(true);
@@ -230,7 +229,7 @@ public class GallerySectionView : MonoBehaviour, IProjectSectionView
         }
     }
 
-    private async void DisplayDashboardImage(int index)
+    private void DisplayDashboardImage(int index)
     {
         if (index < 0 || index >= dashboardImagePaths.Count || dashboardImageView == null) return;
 
@@ -238,22 +237,35 @@ public class GallerySectionView : MonoBehaviour, IProjectSectionView
 
         if (File.Exists(imagePath))
         {
+            // CRITICAL: Destroy both the old sprite AND the old texture to prevent memory leaks
             if (currentDashboardSprite != null) Destroy(currentDashboardSprite);
+            if (currentDashboardTexture != null) Destroy(currentDashboardTexture);
 
-            // Safely streams off disk instead of locking the thread with File.ReadAllBytes
-            currentDashboardSprite = await Helpers.ImageHelper.LoadSpriteFromAbsolutePathAsync(imagePath);
+            // 1. Load the raw bytes into a Texture2D
+            byte[] fileData = File.ReadAllBytes(imagePath);
+            currentDashboardTexture = new Texture2D(2, 2);
+            currentDashboardTexture.LoadImage(fileData);
 
-            if (dashboardImageView != null && currentDashboardSprite != null)
+            // 2. Convert the Texture2D into a UI Sprite
+            currentDashboardSprite = Sprite.Create(
+                currentDashboardTexture,
+                new Rect(0, 0, currentDashboardTexture.width, currentDashboardTexture.height),
+                new Vector2(0.5f, 0.5f) // Centers the pivot
+            );
+
+            // 3. Assign to the Image component
+            dashboardImageView.sprite = currentDashboardSprite;
+            dashboardImageView.preserveAspect = true;
+
+            // --- STRICT ASPECT RATIO FITTER ---
+            // This guarantees the image scales properly inside its parent bounds without stretching
+            AspectRatioFitter aspectFitter = dashboardImageView.GetComponent<AspectRatioFitter>();
+            if (aspectFitter == null)
             {
-                dashboardImageView.sprite = currentDashboardSprite;
-                dashboardImageView.preserveAspect = true;
-
-                AspectRatioFitter aspectFitter = dashboardImageView.GetComponent<AspectRatioFitter>();
-                if (aspectFitter == null) aspectFitter = dashboardImageView.gameObject.AddComponent<AspectRatioFitter>();
-
-                aspectFitter.aspectMode = AspectRatioFitter.AspectMode.FitInParent;
-                aspectFitter.aspectRatio = currentDashboardSprite.rect.width / currentDashboardSprite.rect.height;
+                aspectFitter = dashboardImageView.gameObject.AddComponent<AspectRatioFitter>();
             }
+            aspectFitter.aspectMode = AspectRatioFitter.AspectMode.FitInParent;
+            aspectFitter.aspectRatio = (float)currentDashboardTexture.width / currentDashboardTexture.height;
         }
 
         UpdateDashboardButtons();

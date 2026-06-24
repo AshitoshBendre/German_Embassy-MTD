@@ -11,7 +11,7 @@ public class ImageButtonUI : MonoBehaviour
    /* private string titleText;*/
     private string fullFolderPath;
     [SerializeField] private Image image;
-
+    [SerializeField] private AspectRatioFitter aspectRationFitter;
     private void Awake()
     {
         if(image == null)
@@ -43,6 +43,13 @@ public class ImageButtonUI : MonoBehaviour
             imageUrl,
             image);
         if (image != null) image.color = Color.white;
+
+        if (aspectRationFitter != null)
+        {
+            if (image.sprite == null) return;
+
+            aspectRationFitter.aspectRatio = (float)image.sprite.texture.width / image.sprite.texture.height;
+        }
         Debug.Log($"Loaded {imageUrl}");
     }
 
