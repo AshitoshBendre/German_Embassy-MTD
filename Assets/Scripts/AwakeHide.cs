@@ -14,6 +14,7 @@ public class AwakeHide : MonoBehaviour
 
     public void reset()
     {
+        Debug.Log("called");
         cg.alpha = 1f;
         cg.interactable = true;
         cg.blocksRaycasts = true;

@@ -4,29 +4,15 @@ using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.UI;
 using UnityEngine.EventSystems;
-using System.ComponentModel;
 
 namespace ScrollCarousel
 {
-    public enum CarouselMode
-    {
-        Horizontal,
-        Vertical,
-        Infinite
-    }
+    public enum CarouselMode { Horizontal, Vertical, Infinite }
 
     public class Carousel : MonoBehaviour, IDragHandler, IEndDragHandler, IBeginDragHandler
     {
         [Header("Scrolling Mode")]
         public CarouselMode Mode = CarouselMode.Horizontal;
-
-        [HideInInspector]
-        [Obsolete("Use 'Mode = CarouselMode.Infinite' instead.")]
-        public bool InfiniteScroll
-        {
-            get => Mode == CarouselMode.Infinite;
-            set => Mode = value ? CarouselMode.Infinite : CarouselMode.Horizontal;
-        }
 
         [Header("Items")]
         public List<RectTransform> Items = new List<RectTransform>();
@@ -35,9 +21,11 @@ namespace ScrollCarousel
         public int StartItem = 0;
         public float Itemspacing = 50f;
 
-        [Header("Scale")]
+        [Header("Scale Falloff")]
         public float CenteredScale = 1f;
-        public float NonCenteredScale = 0.7f;
+        public float MaxNonCenteredScale = 0.7f;
+        public float MinNonCenteredScale = 0.1f;
+        public float FalloffSlotCount = 3f;
 
         [Header("Rotation")]
         [SerializeField] public float MaxRotationAngle = 10f;
@@ -45,7 +33,7 @@ namespace ScrollCarousel
 
         [Header("Swipe Settings")]
         [SerializeField] private float _snapSpeed = 10f;
-        [SerializeField] private float _swipeThreshold = 35f; // The distance a finger must drag to count as a "Swipe"
+        [SerializeField] private float _swipeThreshold = 35f;
         [SerializeField] public float CircleRadius = 500f;
 
         [Header("Colors")]
@@ -57,45 +45,59 @@ namespace ScrollCarousel
         private int _currentItemIndex = 0;
         private bool _isSnapping = false;
         private float _currentRotationOffset = 0f;
-        private Vector2 _totalDragDelta; // <--- Tracks the cumulative momentum of a swipe
-        private Dictionary<RectTransform, Coroutine> _activeColorAnimations = new Dictionary<RectTransform, Coroutine>();
+        private Vector2 _totalDragDelta;
+        private Dictionary<RectTransform, Coroutine> _activeColorAnimations = new();
         private List<(RectTransform item, float distance)> _depthSortBuffer = new();
 
-        private void Awake()
-        {
-            if (_rectTransform == null) _rectTransform = GetComponent<RectTransform>();
-        }
+        private void Awake() { if (_rectTransform == null) _rectTransform = GetComponent<RectTransform>(); }
+        private void OnEnable() { if (Items != null && Items.Count > 0) ForceUpdate(); }
+        private void Start() { FocusItem(StartItem); ForceUpdate(); }
+        private void Update() { if (_isSnapping) MoveToItem(); UpdateItemsAppearance(); }
 
-        private void OnEnable()
+        // --- MATH HELPER 1: Distance immune to Modulo wrapping ---
+        private int GetSlotDistance(int indexA, int indexB)
         {
-            if (_rectTransform == null) _rectTransform = GetComponent<RectTransform>();
-            if (Items != null && Items.Count > 0)
+            int raw = Mathf.Abs(indexA - indexB);
+            if (Mode == CarouselMode.Infinite && Items.Count > 0)
             {
-                ForceUpdate();
+                return Mathf.Min(raw, Items.Count - raw);
             }
+            return raw;
         }
 
-        private void Start()
+        // --- MATH HELPER 2: Scannable pixel distance grabber ---
+        private float GetPhysicalDistanceFromCenter(int index)
         {
-            FocusItem(StartItem);
-            ForceUpdate();
+            Vector2 center = _rectTransform.rect.center;
+            if (Mode == CarouselMode.Infinite)
+            {
+                float angle = (360f / Items.Count) * (index - _currentItemIndex) + _currentRotationOffset;
+                return Mathf.Abs(Mathf.DeltaAngle(0, angle)) / (360f / Items.Count) * CircleRadius;
+            }
+            else if (Mode == CarouselMode.Vertical) return Mathf.Abs(Items[index].anchoredPosition.y - center.y);
+            else return Mathf.Abs(Items[index].anchoredPosition.x - center.x);
         }
 
-        private void Update()
+        private float GetTargetRestScale(int index)
         {
-            if (_isSnapping) MoveToItem();
-            UpdateItemsAppearance();
+            int slotsAway = GetSlotDistance(index, _currentItemIndex);
+            if (slotsAway == 0) return CenteredScale;
+            if (slotsAway == 1) return MaxNonCenteredScale;
+
+            float safeFalloff = Mathf.Max(0.01f, FalloffSlotCount);
+            float t = Mathf.Clamp01((slotsAway - 1f) / safeFalloff);
+            return Mathf.Lerp(MaxNonCenteredScale, MinNonCenteredScale, t);
         }
 
         private float GetItemSpacing(int index, bool isHorizontal)
         {
-            float currentItemScale = (index == _currentItemIndex) ? CenteredScale : NonCenteredScale;
+            float currentItemScale = GetTargetRestScale(index);
             float currentSize = isHorizontal ? Items[index].rect.width : Items[index].rect.height;
             currentSize *= currentItemScale;
 
             if (index + 1 >= Items.Count) return currentSize + Itemspacing;
 
-            float nextItemScale = (index + 1 == _currentItemIndex) ? CenteredScale : NonCenteredScale;
+            float nextItemScale = GetTargetRestScale(index + 1);
             float nextSize = isHorizontal ? Items[index + 1].rect.width : Items[index + 1].rect.height;
             nextSize *= nextItemScale;
 
@@ -108,10 +110,7 @@ namespace ScrollCarousel
             int startIdx = Math.Min(index, _currentItemIndex);
             int endIdx = Math.Max(index, _currentItemIndex);
 
-            for (int i = startIdx; i < endIdx; i++)
-            {
-                offset += GetItemSpacing(i, isHorizontal);
-            }
+            for (int i = startIdx; i < endIdx; i++) offset += GetItemSpacing(i, isHorizontal);
 
             if (isHorizontal) return index < _currentItemIndex ? -offset : offset;
             else return index < _currentItemIndex ? offset : -offset;
@@ -120,8 +119,7 @@ namespace ScrollCarousel
         private void PositionItems(bool animate = true)
         {
             if (Items.Count == 0) return;
-
-            Vector2 centerPoint = _rectTransform.rect.center;
+            Vector2 center = _rectTransform.rect.center;
             float targetTime = animate ? Time.deltaTime * _snapSpeed : 1f;
 
             for (int i = 0; i < Items.Count; i++)
@@ -132,171 +130,145 @@ namespace ScrollCarousel
                 if (Mode == CarouselMode.Infinite)
                 {
                     float angle = (360f / Items.Count) * (i - _currentItemIndex);
-                    float radians = angle * Mathf.Deg2Rad;
-                    targetPosition = new Vector2(
-                        centerPoint.x + Mathf.Sin(radians) * CircleRadius,
-                        centerPoint.y + (1 - Mathf.Cos(radians)) * CircleRadius * 0.5f
-                    );
+                    float rad = angle * Mathf.Deg2Rad;
+                    targetPosition = new Vector2(center.x + Mathf.Sin(rad) * CircleRadius, center.y + (1 - Mathf.Cos(rad)) * CircleRadius * 0.5f);
                 }
-                else if (Mode == CarouselMode.Vertical)
-                {
-                    float offset = GetTotalOffset(i, false);
-                    targetPosition = new Vector2(centerPoint.x, centerPoint.y + offset);
-                }
-                else // Horizontal
-                {
-                    float offset = GetTotalOffset(i, true);
-                    targetPosition = new Vector2(centerPoint.x + offset, centerPoint.y);
-                }
+                else if (Mode == CarouselMode.Vertical) targetPosition = new Vector2(center.x, center.y + (GetTotalOffset(i, false)));
+                else targetPosition = new Vector2(center.x + (GetTotalOffset(i, true)), center.y);
 
-                Items[i].anchoredPosition = animate
-                    ? Vector2.Lerp(Items[i].anchoredPosition, targetPosition, targetTime)
-                    : targetPosition;
+                Items[i].anchoredPosition = animate ? Vector2.Lerp(Items[i].anchoredPosition, targetPosition, targetTime) : targetPosition;
             }
         }
 
         private void UpdateItemsAppearance()
         {
             if (Items.Count == 0) return;
+            Vector2 center = _rectTransform.rect.center;
 
-            Vector2 centerPoint = _rectTransform.rect.center;
-            float maxDistance;
+            // 1. Find the item closest to the crosshairs right now (Neighbor A)
+            int closestIdx = 0;
+            float minDistA = float.MaxValue;
+            _depthSortBuffer.Clear();
 
-            if (Mode == CarouselMode.Infinite) maxDistance = CircleRadius;
-            else if (Mode == CarouselMode.Vertical) maxDistance = GetItemSpacing(0, false);
-            else maxDistance = GetItemSpacing(0, true);
+            for (int i = 0; i < Items.Count; i++)
+            {
+                if (!Items[i]) continue;
+                float dist = GetPhysicalDistanceFromCenter(i);
+                _depthSortBuffer.Add((Items[i], dist));
 
-            if (maxDistance == 0) maxDistance = 1f;
+                if (dist < minDistA)
+                {
+                    minDistA = dist;
+                    closestIdx = i;
+                }
+            }
 
-            float minDistance = float.MaxValue;
-            int closestIndex = -1;
+            // 2. Find which of its two immediate side-kicks is the "second closest" (Neighbor B)
+            int secondClosestIdx = closestIdx;
+            float minDistB = float.MaxValue;
 
-            _depthSortBuffer.Clear(); // Clear our zero-allocation buffer
+            int leftIdx = (Mode == CarouselMode.Infinite) ? (closestIdx - 1 + Items.Count) % Items.Count : closestIdx - 1;
+            if (leftIdx >= 0 && leftIdx < Items.Count)
+            {
+                float d = GetPhysicalDistanceFromCenter(leftIdx);
+                if (d < minDistB) { minDistB = d; secondClosestIdx = leftIdx; }
+            }
+
+            int rightIdx = (Mode == CarouselMode.Infinite) ? (closestIdx + 1) % Items.Count : closestIdx + 1;
+            if (rightIdx >= 0 && rightIdx < Items.Count)
+            {
+                float d = GetPhysicalDistanceFromCenter(rightIdx);
+                if (d < minDistB) { minDistB = d; secondClosestIdx = rightIdx; }
+            }
+
+            // 3. The golden ratio of the drag (0.0 means dead centered on A, 1.0 means arrived at B)
+            float dragLerp = (minDistA + minDistB > 0.001f) ? (minDistA / (minDistA + minDistB)) : 0f;
+
+            float slotDistance = (Mode == CarouselMode.Infinite) ? CircleRadius : GetItemSpacing(0, Mode == CarouselMode.Horizontal);
+            if (slotDistance == 0) slotDistance = 1f;
 
             for (int i = 0; i < Items.Count; i++)
             {
                 if (!Items[i]) continue;
 
-                float distance;
-                float angleDistance;
+                // --- THE PURE INDEX SCALE CALCULATOR ---
+                float distToA = GetSlotDistance(i, closestIdx);
+                float distToB = GetSlotDistance(i, secondClosestIdx);
+                float mathSlotsAway = Mathf.Lerp(distToA, distToB, dragLerp);
 
-                if (Mode == CarouselMode.Infinite)
+                float targetScale;
+                if (mathSlotsAway <= 1f)
                 {
-                    float angle = (360f / Items.Count) * (i - _currentItemIndex) + _currentRotationOffset;
-                    distance = Mathf.Abs(Mathf.DeltaAngle(0, angle)) / (360f / Items.Count) * CircleRadius;
-                    angleDistance = Mathf.Abs(Mathf.DeltaAngle(0, angle)) / (360f / Items.Count);
-                }
-                else if (Mode == CarouselMode.Vertical)
-                {
-                    distance = Mathf.Abs(Items[i].anchoredPosition.y - centerPoint.y);
-                    angleDistance = Mathf.Abs(i - _currentItemIndex);
-                }
-                else // Horizontal
-                {
-                    distance = Mathf.Abs(Items[i].anchoredPosition.x - centerPoint.x);
-                    angleDistance = Mathf.Abs(i - _currentItemIndex);
-                }
-
-                if (distance < minDistance)
-                {
-                    minDistance = distance;
-                    closestIndex = i;
-                }
-
-                // 1. Capture the item and its true physical distance this frame
-                _depthSortBuffer.Add((Items[i], distance));
-
-                float normalizedDistance = Mathf.Clamp01(distance / maxDistance);
-
-                // --- Scale ---
-                float targetScale = Mathf.Lerp(CenteredScale, NonCenteredScale, normalizedDistance);
-                Vector3 newScale = new Vector3(targetScale, targetScale, 1f);
-                if (!float.IsNaN(newScale.x)) Items[i].localScale = newScale;
-
-                // --- Rotation ---
-                if (Mode == CarouselMode.Vertical)
-                {
-                    float rotationSign = (Items[i].anchoredPosition.y > centerPoint.y) ? -1f : 1f;
-                    float targetRotationX = MaxRotationAngle * normalizedDistance * rotationSign;
-                    if (!float.IsNaN(targetRotationX))
-                    {
-                        Items[i].localRotation = Quaternion.Slerp(Items[i].localRotation, Quaternion.Euler(targetRotationX, 0, 0), Time.deltaTime * _rotationSmoothSpeed);
-                    }
+                    targetScale = Mathf.Lerp(CenteredScale, MaxNonCenteredScale, mathSlotsAway);
                 }
                 else
                 {
-                    float rotationSign = (Items[i].anchoredPosition.x > centerPoint.x) ? 1f : -1f;
-                    float targetRotationY = MaxRotationAngle * normalizedDistance * rotationSign;
-                    if (!float.IsNaN(targetRotationY))
-                    {
-                        Items[i].localRotation = Quaternion.Slerp(Items[i].localRotation, Quaternion.Euler(30, targetRotationY, 0), Time.deltaTime * _rotationSmoothSpeed);
-                    }
+                    float safeFalloff = Mathf.Max(0.01f, FalloffSlotCount);
+                    float falloffProgress = Mathf.Clamp01((mathSlotsAway - 1f) / safeFalloff);
+                    targetScale = Mathf.Lerp(MaxNonCenteredScale, MinNonCenteredScale, falloffProgress);
+                }
+
+                Vector3 newScale = new Vector3(targetScale, targetScale, 1f);
+                if (!float.IsNaN(newScale.x)) Items[i].localScale = newScale;
+
+                // --- ROTATION ---
+                float pxDist = GetPhysicalDistanceFromCenter(i);
+                float normDist = Mathf.Clamp01(pxDist / slotDistance);
+
+                if (Mode == CarouselMode.Vertical)
+                {
+                    float rotSign = (Items[i].anchoredPosition.y > center.y) ? -1f : 1f;
+                    float rotX = MaxRotationAngle * normDist * rotSign;
+                    if (!float.IsNaN(rotX)) Items[i].localRotation = Quaternion.Slerp(Items[i].localRotation, Quaternion.Euler(rotX, 0, 0), Time.deltaTime * _rotationSmoothSpeed);
+                }
+                else
+                {
+                    float rotSign = (Items[i].anchoredPosition.x > center.x) ? 1f : -1f;
+                    float rotY = MaxRotationAngle * normDist * rotSign;
+                    if (!float.IsNaN(rotY)) Items[i].localRotation = Quaternion.Slerp(Items[i].localRotation, Quaternion.Euler(30, rotY, 0), Time.deltaTime * _rotationSmoothSpeed);
                 }
             }
 
-            // 2. Sort buffer DESCENDING (Furthest distance first -> Closest distance last)
-            // (Using a C# 9 'static' lambda guarantees no hidden closure memory allocations)
             _depthSortBuffer.Sort(static (a, b) => b.distance.CompareTo(a.distance));
+            foreach (var entry in _depthSortBuffer) entry.item.SetAsLastSibling();
 
-            // 3. Render stack push. The closest item gets pushed last, putting it on top.
-            foreach (var entry in _depthSortBuffer)
-            {
-                entry.item.SetAsLastSibling();
-            }
-
-            if (ColorAnimation && closestIndex != -1)
+            if (ColorAnimation && closestIdx != -1)
             {
                 for (int i = 0; i < Items.Count; i++)
                 {
                     if (Items[i] == null) continue;
-                    Color targetColor = (i == closestIndex) ? FocustedColor : NonFocustedColor;
-                    StartColorAnimation(Items[i], targetColor);
+                    StartColorAnimation(Items[i], (i == closestIdx) ? FocustedColor : NonFocustedColor);
                 }
             }
         }
 
-
-        public void OnBeginDrag(PointerEventData eventData)
-        {
-            _isSnapping = false;
-            _totalDragDelta = Vector2.zero; // Reset swipe tracker
-        }
+        public void OnBeginDrag(PointerEventData eventData) { _isSnapping = false; _totalDragDelta = Vector2.zero; }
 
         public void OnDrag(PointerEventData eventData)
         {
             if (Items.Count == 0) return;
-
-            _totalDragDelta += eventData.delta; // Accumulate mouse/finger distance
+            _totalDragDelta += eventData.delta;
 
             if (Mode == CarouselMode.Infinite)
             {
-                float rotationDelta = (eventData.delta.x / CircleRadius) * 45f;
-                _currentRotationOffset += rotationDelta;
-                RotateItemsCircular(_currentRotationOffset);
+                _currentRotationOffset += (eventData.delta.x / CircleRadius) * 45f;
+                Vector2 center = _rectTransform.rect.center;
+                for (int i = 0; i < Items.Count; i++)
+                {
+                    if (Items[i] == null) continue;
+                    float rad = ((360f / Items.Count) * (i - _currentItemIndex) + _currentRotationOffset) * Mathf.Deg2Rad;
+                    Items[i].anchoredPosition = new Vector2(center.x + Mathf.Sin(rad) * CircleRadius, center.y + (1 - Mathf.Cos(rad)) * CircleRadius * 0.5f);
+                }
             }
             else if (Mode == CarouselMode.Vertical)
             {
-                float dragFactor = 1f;
-                // Add physical "heaviness" if pulling against the hard top/bottom limits
-                if ((_currentItemIndex == 0 && eventData.delta.y < 0) || (_currentItemIndex == Items.Count - 1 && eventData.delta.y > 0))
-                    dragFactor = 0.35f;
-
-                foreach (RectTransform item in Items)
-                {
-                    if (item != null) item.anchoredPosition += new Vector2(0, eventData.delta.y * dragFactor);
-                }
+                float dragFactor = ((_currentItemIndex == 0 && eventData.delta.y < 0) || (_currentItemIndex == Items.Count - 1 && eventData.delta.y > 0)) ? 0.35f : 1f;
+                foreach (RectTransform item in Items) if (item != null) item.anchoredPosition += new Vector2(0, eventData.delta.y * dragFactor);
             }
-            else // Horizontal
+            else
             {
-                float dragFactor = 1f;
-                // Add physical "heaviness" if pulling against the hard left/right limits
-                if ((_currentItemIndex == 0 && eventData.delta.x > 0) || (_currentItemIndex == Items.Count - 1 && eventData.delta.x < 0))
-                    dragFactor = 0.35f;
-
-                foreach (RectTransform item in Items)
-                {
-                    if (item != null) item.anchoredPosition += new Vector2(eventData.delta.x * dragFactor, 0);
-                }
+                float dragFactor = ((_currentItemIndex == 0 && eventData.delta.x > 0) || (_currentItemIndex == Items.Count - 1 && eventData.delta.x < 0)) ? 0.35f : 1f;
+                foreach (RectTransform item in Items) if (item != null) item.anchoredPosition += new Vector2(eventData.delta.x * dragFactor, 0);
             }
         }
 
@@ -306,56 +278,28 @@ namespace ScrollCarousel
 
             if (Mode == CarouselMode.Infinite)
             {
-                float closestDistance = float.MaxValue;
-                int closestIndex = 0;
+                float closestDist = float.MaxValue; int closestIdx = 0;
                 for (int i = 0; i < Items.Count; i++)
                 {
                     if (Items[i] == null) continue;
-                    float angle = (360f / Items.Count) * (i - _currentItemIndex) + _currentRotationOffset;
-                    float distance = Mathf.Abs(Mathf.DeltaAngle(0, angle));
-                    if (distance < closestDistance)
-                    {
-                        closestDistance = distance;
-                        closestIndex = i;
-                    }
+                    float dist = Mathf.Abs(Mathf.DeltaAngle(0, (360f / Items.Count) * (i - _currentItemIndex) + _currentRotationOffset));
+                    if (dist < closestDist) { closestDist = dist; closestIdx = i; }
                 }
-                FocusItem(closestIndex);
+                FocusItem(closestIdx);
             }
             else if (Mode == CarouselMode.Vertical)
             {
-                // Swiping UP (positive delta.y) moves content up, bringing the NEXT item into view
                 if (_totalDragDelta.y > _swipeThreshold) GoToNext();
                 else if (_totalDragDelta.y < -_swipeThreshold) GoToPrevious();
-                else FocusItem(_currentItemIndex); // Didn't swipe hard enough; spring back to current
+                else FocusItem(_currentItemIndex);
             }
-            else // Horizontal
+            else
             {
-                // Swiping LEFT (negative delta.x) moves content left, bringing NEXT item into view
                 if (_totalDragDelta.x < -_swipeThreshold) GoToNext();
                 else if (_totalDragDelta.x > _swipeThreshold) GoToPrevious();
-                else FocusItem(_currentItemIndex); // Didn't swipe hard enough; spring back to current
+                else FocusItem(_currentItemIndex);
             }
-
             _currentRotationOffset = 0f;
-        }
-
-        // =========================================================
-
-        private void RotateItemsCircular(float rotationOffset)
-        {
-            Vector2 centerPoint = _rectTransform.rect.center;
-            for (int i = 0; i < Items.Count; i++)
-            {
-                if (Items[i] == null) continue;
-                float baseAngle = (360f / Items.Count) * (i - _currentItemIndex);
-                float angle = baseAngle + rotationOffset;
-                float radians = angle * Mathf.Deg2Rad;
-
-                Items[i].anchoredPosition = new Vector2(
-                    centerPoint.x + Mathf.Sin(radians) * CircleRadius,
-                    centerPoint.y + (1 - Mathf.Cos(radians)) * CircleRadius * 0.5f
-                );
-            }
         }
 
         private void MoveToItem()
@@ -363,161 +307,49 @@ namespace ScrollCarousel
             PositionItems(true);
             if (Items.Count == 0 || Items[_currentItemIndex] == null) return;
 
-            RectTransform targetItem = Items[_currentItemIndex];
-            float currentPos = (Mode == CarouselMode.Vertical) ? targetItem.anchoredPosition.y : targetItem.anchoredPosition.x;
+            float currentPos = (Mode == CarouselMode.Vertical) ? Items[_currentItemIndex].anchoredPosition.y : Items[_currentItemIndex].anchoredPosition.x;
             float targetCenter = (Mode == CarouselMode.Vertical) ? _rectTransform.rect.center.y : _rectTransform.rect.center.x;
 
-            if (Mathf.Abs(currentPos - targetCenter) < 0.1f)
-            {
-                _isSnapping = false;
-                PositionItems(false);
-            }
+            if (Mathf.Abs(currentPos - targetCenter) < 0.1f) { _isSnapping = false; PositionItems(false); }
         }
 
         public void FocusItem(RectTransform item) => FocusItem(Items.IndexOf(item));
-
         private void FocusItem(int index)
         {
             if (Items.Count == 0) return;
-
             _currentItemIndex = Mathf.Clamp(index, 0, Items.Count - 1);
-            _currentRotationOffset = 0f;
-            _isSnapping = true;
+            _currentRotationOffset = 0f; _isSnapping = true;
+            for (int i = 0; i < Items.Count; i++) if (Items[i] != null) Items[i].GetComponent<CarouselButton>()?.SetFocus(i == _currentItemIndex);
+        }
 
-            for (int i = 0; i < Items.Count; i++)
+        public void GoToNext() { if (Items.Count > 1) FocusItem(Mode == CarouselMode.Infinite ? (_currentItemIndex + 1) % Items.Count : Mathf.Min(_currentItemIndex + 1, Items.Count - 1)); }
+        public void GoToPrevious() { if (Items.Count > 1) FocusItem(Mode == CarouselMode.Infinite ? (_currentItemIndex - 1 + Items.Count) % Items.Count : Mathf.Max(_currentItemIndex - 1, 0)); }
+        public void ForceUpdate() { Items.RemoveAll(x => x == null); PositionItems(false); UpdateItemsAppearance(); }
+
+        private void StartColorAnimation(RectTransform item, Color target)
+        {
+            if (_activeColorAnimations.TryGetValue(item, out Coroutine r)) { if (r != null) StopCoroutine(r); _activeColorAnimations.Remove(item); }
+            if (item == null || !item.TryGetComponent<Image>(out var img)) return;
+
+            if (!gameObject.activeInHierarchy || !item.gameObject.activeInHierarchy) { img.color = target; return; }
+            _activeColorAnimations[item] = StartCoroutine(ColorAnim(item, target, img));
+        }
+
+        private IEnumerator ColorAnim(RectTransform item, Color targetColor, Image img)
+        {
+            Color start = img.color; float elapsed = 0f;
+            while (elapsed < 0.2f)
             {
-                if (Items[i] != null) Items[i].GetComponent<CarouselButton>()?.SetFocus(i == _currentItemIndex);
-            }
-        }
-
-        public void GoToNext()
-        {
-            if (Items.Count <= 1) return;
-            FocusItem(Mode == CarouselMode.Infinite ? (_currentItemIndex + 1) % Items.Count : Mathf.Min(_currentItemIndex + 1, Items.Count - 1));
-        }
-
-        public void GoToPrevious()
-        {
-            if (Items.Count <= 1) return;
-            FocusItem(Mode == CarouselMode.Infinite ? (_currentItemIndex - 1 + Items.Count) % Items.Count : Mathf.Max(_currentItemIndex - 1, 0));
-        }
-
-        public void ForceUpdate()
-        {
-            Items.RemoveAll(x => x == null);
-            PositionItems(false);
-            UpdateItemsAppearance();
-        }
-
-        private void StartColorAnimation(RectTransform item, Color targetColor)
-        {
-            if (_activeColorAnimations.TryGetValue(item, out Coroutine existingRoutine))
-            {
-                if (existingRoutine != null) StopCoroutine(existingRoutine);
-                _activeColorAnimations.Remove(item);
-            }
-
-            if (item == null || !item.TryGetComponent<Image>(out var image)) return;
-
-            if (!this.gameObject.activeInHierarchy || !item.gameObject.activeInHierarchy)
-            {
-                image.color = targetColor;
-                return;
-            }
-
-            _activeColorAnimations[item] = StartCoroutine(ColorAnimationCoroutine(item, targetColor, image));
-        }
-
-        private IEnumerator ColorAnimationCoroutine(RectTransform item, Color targetColor, Image image)
-        {
-            Color startColor = image.color;
-            float elapsedTime = 0f;
-            float duration = 0.2f;
-
-            while (elapsedTime < duration)
-            {
-                if (item == null || image == null)
-                {
-                    _activeColorAnimations.Remove(item);
-                    yield break;
-                }
-
-                elapsedTime += Time.deltaTime;
-                image.color = Color.Lerp(startColor, targetColor, elapsedTime / duration);
+                if (item == null || img == null) { _activeColorAnimations.Remove(item); yield break; }
+                elapsed += Time.deltaTime; img.color = Color.Lerp(start, targetColor, elapsed / 0.2f);
                 yield return null;
             }
-
-            if (image != null) image.color = targetColor;
-            _activeColorAnimations.Remove(item);
+            img.color = targetColor; _activeColorAnimations.Remove(item);
         }
 
-        #region NEW ADD AND REMOVE ITEMS
-
-        public void SetItems(List<RectTransform> items)
-        {
-            ClearItems();
-            Items.AddRange(items);
-            _currentItemIndex = Mathf.Clamp(StartItem, 0, Mathf.Max(0, Items.Count - 1));
-            ForceUpdate();
-        }
-
-        public void AddItem(RectTransform item, int insertAtIndex = -1)
-        {
-            if (item == null || Items.Contains(item)) return;
-
-            int targetIndex = (insertAtIndex < 0 || insertAtIndex > Items.Count) ? Items.Count : insertAtIndex;
-            Items.Insert(targetIndex, item);
-
-            if (targetIndex <= _currentItemIndex && Items.Count > 1) _currentItemIndex++;
-
-            item.localScale = Vector3.one * NonCenteredScale;
-            if (ColorAnimation && item.TryGetComponent<Image>(out var img)) img.color = NonFocustedColor;
-
-            ForceUpdate();
-        }
-
-        public void RemoveItem(RectTransform item)
-        {
-            if (item == null || !Items.Contains(item)) return;
-
-            int removedIndex = Items.IndexOf(item);
-            if (_activeColorAnimations.TryGetValue(item, out Coroutine routine))
-            {
-                if (routine != null) StopCoroutine(routine);
-                _activeColorAnimations.Remove(item);
-            }
-            Items.RemoveAt(removedIndex);
-
-            if (Items.Count == 0)
-            {
-                _currentItemIndex = 0;
-                _isSnapping = false;
-                return;
-            }
-
-            if (removedIndex < _currentItemIndex) _currentItemIndex--;
-            else if (removedIndex == _currentItemIndex)
-            {
-                _currentItemIndex = Mathf.Clamp(_currentItemIndex, 0, Items.Count - 1);
-                FocusItem(_currentItemIndex);
-            }
-
-            ForceUpdate();
-        }
-
-        public void ClearItems()
-        {
-            _isSnapping = false;
-            _currentItemIndex = 0;
-
-            foreach (var kvp in _activeColorAnimations)
-            {
-                if (kvp.Value != null) StopCoroutine(kvp.Value);
-            }
-            _activeColorAnimations.Clear();
-            Items.Clear();
-        }
-
-        #endregion
+        public void SetItems(List<RectTransform> items) { ClearItems(); Items.AddRange(items); _currentItemIndex = Mathf.Clamp(StartItem, 0, Mathf.Max(0, Items.Count - 1)); ForceUpdate(); }
+        public void AddItem(RectTransform item, int index = -1) { if (item == null || Items.Contains(item)) return; int target = (index < 0 || index > Items.Count) ? Items.Count : index; Items.Insert(target, item); if (target <= _currentItemIndex && Items.Count > 1) _currentItemIndex++; item.localScale = Vector3.one * MaxNonCenteredScale; ForceUpdate(); }
+        public void RemoveItem(RectTransform item) { if (item == null || !Items.Contains(item)) return; int idx = Items.IndexOf(item); if (_activeColorAnimations.TryGetValue(item, out Coroutine r)) { if (r != null) StopCoroutine(r); _activeColorAnimations.Remove(item); } Items.RemoveAt(idx); if (Items.Count == 0) { _currentItemIndex = 0; _isSnapping = false; return; } if (idx < _currentItemIndex) _currentItemIndex--; else if (idx == _currentItemIndex) FocusItem(Mathf.Clamp(_currentItemIndex, 0, Items.Count - 1)); ForceUpdate(); }
+        public void ClearItems() { _isSnapping = false; _currentItemIndex = 0; foreach (var kvp in _activeColorAnimations) if (kvp.Value != null) StopCoroutine(kvp.Value); _activeColorAnimations.Clear(); Items.Clear(); }
     }
 }

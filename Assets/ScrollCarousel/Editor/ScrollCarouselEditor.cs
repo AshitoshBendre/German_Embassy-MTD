@@ -25,7 +25,6 @@ namespace ScrollCarousel
 
             if (GUILayout.Button("Organize Items (Preview Layout)"))
             {
-                // Record undo state so the dev can hit Ctrl+Z if they don't like the snap
                 Undo.RecordObject(carousel, "Organize Carousel Items");
                 foreach (var item in carousel.Items)
                 {
@@ -34,7 +33,7 @@ namespace ScrollCarousel
 
                 OrganizeItemsInEditor();
                 UpdateItemsAppearanceInEditor();
-                OrganizeItemsInEditor(); // Double pass guarantees locked-in math
+                OrganizeItemsInEditor();
             }
 
             GUILayout.EndVertical();
@@ -55,9 +54,14 @@ namespace ScrollCarousel
             EditorGUILayout.PropertyField(serializedObject.FindProperty("Itemspacing"));
 
             EditorGUILayout.Space(5);
-            EditorGUILayout.LabelField("Appearance", EditorStyles.boldLabel);
+            EditorGUILayout.LabelField("Scale Falloff", EditorStyles.boldLabel);
             EditorGUILayout.PropertyField(serializedObject.FindProperty("CenteredScale"));
-            EditorGUILayout.PropertyField(serializedObject.FindProperty("NonCenteredScale"));
+            EditorGUILayout.PropertyField(serializedObject.FindProperty("MaxNonCenteredScale"));
+            EditorGUILayout.PropertyField(serializedObject.FindProperty("MinNonCenteredScale"));
+            EditorGUILayout.PropertyField(serializedObject.FindProperty("FalloffSlotCount"));
+
+            EditorGUILayout.Space(5);
+            EditorGUILayout.LabelField("Appearance & Physics", EditorStyles.boldLabel);
             EditorGUILayout.PropertyField(serializedObject.FindProperty("MaxRotationAngle"));
             EditorGUILayout.PropertyField(serializedObject.FindProperty("_rotationSmoothSpeed"));
             EditorGUILayout.PropertyField(serializedObject.FindProperty("_snapSpeed"));
@@ -95,9 +99,22 @@ namespace ScrollCarousel
             EditorUtility.SetDirty(carousel);
         }
 
+        // --- NEW: Editor equivalent of GetTargetRestScale relative to 'StartItem' ---
+        private float GetTargetRestScaleInEditor(int index)
+        {
+            int slotsAway = Mathf.Abs(index - carousel.StartItem);
+
+            if (slotsAway == 0) return carousel.CenteredScale;
+            if (slotsAway == 1) return carousel.MaxNonCenteredScale;
+
+            float safeFalloff = Mathf.Max(0.01f, carousel.FalloffSlotCount);
+            float t = Mathf.Clamp01((slotsAway - 1f) / safeFalloff);
+            return Mathf.Lerp(carousel.MaxNonCenteredScale, carousel.MinNonCenteredScale, t);
+        }
+
         private void OrganizeItemsInEditor()
         {
-            carousel.Items.RemoveAll(x => x == null); // Purge editor nulls instantly
+            carousel.Items.RemoveAll(x => x == null);
             if (carousel.Items.Count == 0) return;
 
             RectTransform baseRect = carousel.GetComponent<RectTransform>();
@@ -171,8 +188,8 @@ namespace ScrollCarousel
 
                 float normalizedDistance = Mathf.Clamp01(distance / maxDistance);
 
-                // Scale
-                float targetScale = i == carousel.StartItem ? carousel.CenteredScale : carousel.NonCenteredScale;
+                // --- UPDATED SCALE LOGIC ---
+                float targetScale = GetTargetRestScaleInEditor(i);
                 Vector3 newScale = new Vector3(targetScale, targetScale, 1f);
                 if (!float.IsNaN(newScale.x)) carousel.Items[i].localScale = newScale;
 
@@ -198,13 +215,13 @@ namespace ScrollCarousel
 
         private float GetItemSpacing(int index, bool isHorizontal)
         {
-            float currentItemScale = (index == carousel.StartItem) ? carousel.CenteredScale : carousel.NonCenteredScale;
+            float currentItemScale = GetTargetRestScaleInEditor(index);
             float currentSize = isHorizontal ? carousel.Items[index].rect.width : carousel.Items[index].rect.height;
             currentSize *= currentItemScale;
 
             if (index + 1 >= carousel.Items.Count) return currentSize + carousel.Itemspacing;
 
-            float nextItemScale = (index + 1 == carousel.StartItem) ? carousel.CenteredScale : carousel.NonCenteredScale;
+            float nextItemScale = GetTargetRestScaleInEditor(index + 1);
             float nextSize = isHorizontal ? carousel.Items[index + 1].rect.width : carousel.Items[index + 1].rect.height;
             nextSize *= nextItemScale;
 
