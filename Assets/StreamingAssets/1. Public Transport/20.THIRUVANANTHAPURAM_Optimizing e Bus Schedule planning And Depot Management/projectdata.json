@@ -73,7 +73,7 @@
     "reportsTabData": {
         "reportDatas": [
             {
-                "pdfURL": "Reports",
+                "pdfURL": "Reports/",
                 "titleText": "e-bus Optimisation for KSRTC TVM"
             }
         ]
