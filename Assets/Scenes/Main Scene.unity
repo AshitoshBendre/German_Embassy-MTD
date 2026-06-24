@@ -2512,7 +2512,7 @@ MonoBehaviour:
   m_GameObject: {fileID: 156780985}
   m_Enabled: 1
   m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: fe87c0e1cc204ed48ad3b37840f39efc, type: 3}
+  m_Script: {fileID: 11500000, guid: 1344c3c82d62a2a41a3576d8abb8e3ea, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
   m_Material: {fileID: 0}
@@ -2523,16 +2523,13 @@ MonoBehaviour:
   m_OnCullStateChanged:
     m_PersistentCalls:
       m_Calls: []
-  m_Sprite: {fileID: 0}
-  m_Type: 0
-  m_PreserveAspect: 0
-  m_FillCenter: 1
-  m_FillMethod: 4
-  m_FillAmount: 1
-  m_FillClockwise: 1
-  m_FillOrigin: 0
-  m_UseSpriteMesh: 0
-  m_PixelsPerUnitMultiplier: 1
+  m_Texture: {fileID: 0}
+  m_UVRect:
+    serializedVersion: 2
+    x: 0
+    y: 0
+    width: 1
+    height: 1
 --- !u!1 &160058545
 GameObject:
   m_ObjectHideFlags: 0
@@ -3388,7 +3385,7 @@ MonoBehaviour:
   backButton: {fileID: 1705944465}
   projectID: 2. NMT  Accessibility
   dashboardViewerPanel: {fileID: 1768559015}
-  dashboardImageView: {fileID: 1115244430}
+  dashboardRawImage: {fileID: 1115244432}
   dashboardNextButton: {fileID: 1784693655}
   dashboardPrevButton: {fileID: 1753773572}
   dashboardCloseButton: {fileID: 1091198479}
@@ -21985,7 +21982,7 @@ GameObject:
   m_Component:
   - component: {fileID: 1115244429}
   - component: {fileID: 1115244431}
-  - component: {fileID: 1115244430}
+  - component: {fileID: 1115244432}
   m_Layer: 5
   m_Name: Image View
   m_TagString: Untagged
@@ -22012,7 +22009,15 @@ RectTransform:
   m_AnchoredPosition: {x: 0, y: 0}
   m_SizeDelta: {x: 1023.773, y: 575.872}
   m_Pivot: {x: 0.5, y: 0.5}
---- !u!114 &1115244430
+--- !u!222 &1115244431
+CanvasRenderer:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1115244428}
+  m_CullTransparentMesh: 1
+--- !u!114 &1115244432
 MonoBehaviour:
   m_ObjectHideFlags: 0
   m_CorrespondingSourceObject: {fileID: 0}
@@ -22021,7 +22026,7 @@ MonoBehaviour:
   m_GameObject: {fileID: 1115244428}
   m_Enabled: 1
   m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: fe87c0e1cc204ed48ad3b37840f39efc, type: 3}
+  m_Script: {fileID: 11500000, guid: 1344c3c82d62a2a41a3576d8abb8e3ea, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
   m_Material: {fileID: 0}
@@ -22032,24 +22037,13 @@ MonoBehaviour:
   m_OnCullStateChanged:
     m_PersistentCalls:
       m_Calls: []
-  m_Sprite: {fileID: 0}
-  m_Type: 0
-  m_PreserveAspect: 0
-  m_FillCenter: 1
-  m_FillMethod: 4
-  m_FillAmount: 1
-  m_FillClockwise: 1
-  m_FillOrigin: 0
-  m_UseSpriteMesh: 0
-  m_PixelsPerUnitMultiplier: 1
---- !u!222 &1115244431
-CanvasRenderer:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 1115244428}
-  m_CullTransparentMesh: 1
+  m_Texture: {fileID: 0}
+  m_UVRect:
+    serializedVersion: 2
+    x: 0
+    y: 0
+    width: 1
+    height: 1
 --- !u!1 &1117498550
 GameObject:
   m_ObjectHideFlags: 0
@@ -23967,7 +23961,7 @@ MonoBehaviour:
   backButton: {fileID: 1433497733}
   projectID: 3. Gender  Climate
   dashboardViewerPanel: {fileID: 1752203148}
-  dashboardImageView: {fileID: 1968934418}
+  dashboardRawImage: {fileID: 1968934420}
   dashboardNextButton: {fileID: 295012420}
   dashboardPrevButton: {fileID: 1425619456}
   dashboardCloseButton: {fileID: 1577812790}
@@ -24213,7 +24207,7 @@ MonoBehaviour:
   backButton: {fileID: 194317304}
   projectID: 1. Public Transport
   dashboardViewerPanel: {fileID: 445091607}
-  dashboardImageView: {fileID: 156780988}
+  dashboardRawImage: {fileID: 156780988}
   dashboardNextButton: {fileID: 345041826}
   dashboardPrevButton: {fileID: 1843303517}
   dashboardCloseButton: {fileID: 1675088149}
@@ -38694,7 +38688,7 @@ GameObject:
   m_Component:
   - component: {fileID: 1968934417}
   - component: {fileID: 1968934419}
-  - component: {fileID: 1968934418}
+  - component: {fileID: 1968934420}
   m_Layer: 5
   m_Name: Image View
   m_TagString: Untagged
@@ -38721,7 +38715,15 @@ RectTransform:
   m_AnchoredPosition: {x: 0, y: 0}
   m_SizeDelta: {x: 1023.773, y: 575.872}
   m_Pivot: {x: 0.5, y: 0.5}
---- !u!114 &1968934418
+--- !u!222 &1968934419
+CanvasRenderer:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1968934416}
+  m_CullTransparentMesh: 1
+--- !u!114 &1968934420
 MonoBehaviour:
   m_ObjectHideFlags: 0
   m_CorrespondingSourceObject: {fileID: 0}
@@ -38730,7 +38732,7 @@ MonoBehaviour:
   m_GameObject: {fileID: 1968934416}
   m_Enabled: 1
   m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: fe87c0e1cc204ed48ad3b37840f39efc, type: 3}
+  m_Script: {fileID: 11500000, guid: 1344c3c82d62a2a41a3576d8abb8e3ea, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
   m_Material: {fileID: 0}
@@ -38741,24 +38743,13 @@ MonoBehaviour:
   m_OnCullStateChanged:
     m_PersistentCalls:
       m_Calls: []
-  m_Sprite: {fileID: 0}
-  m_Type: 0
-  m_PreserveAspect: 0
-  m_FillCenter: 1
-  m_FillMethod: 4
-  m_FillAmount: 1
-  m_FillClockwise: 1
-  m_FillOrigin: 0
-  m_UseSpriteMesh: 0
-  m_PixelsPerUnitMultiplier: 1
---- !u!222 &1968934419
-CanvasRenderer:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 1968934416}
-  m_CullTransparentMesh: 1
+  m_Texture: {fileID: 0}
+  m_UVRect:
+    serializedVersion: 2
+    x: 0
+    y: 0
+    width: 1
+    height: 1
 --- !u!1 &1970349576
 GameObject:
   m_ObjectHideFlags: 0

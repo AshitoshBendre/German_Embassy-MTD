@@ -10,9 +10,7 @@ using UnityEngine.UI;
 public class GallerySectionView : MonoBehaviour, IProjectSectionView
 {
     [Header("Top Section")]
-    //[SerializeField] private Image imageView;
     [SerializeField] private Carousel carousel;
-    /*[SerializeField] private TMP_Text imagecaption;*/
 
     [Header("Bottom Section")]
     [SerializeField] private Transform gridcontentContainer;
@@ -22,14 +20,10 @@ public class GallerySectionView : MonoBehaviour, IProjectSectionView
     [SerializeField] private GameObject TabButton;
     [SerializeField] private Button backButton;
 
-    /*[Header("Navigation Controls")]
-    [SerializeField] private Button nextButton;
-    [SerializeField] private Button prevButton;*/
-
-    [Header("Dashboard Viewer (New)")]
+    [Header("Dashboard Viewer (Updated to RawImage)")]
     [SerializeField] private string projectID;
     [SerializeField] private GameObject dashboardViewerPanel;
-    [SerializeField] private Image dashboardImageView; // Now using standard UI Image
+    [SerializeField] private RawImage dashboardRawImage; // Now using RawImage directly
     [SerializeField] private Button dashboardNextButton;
     [SerializeField] private Button dashboardPrevButton;
     [SerializeField] private Button dashboardCloseButton;
@@ -44,12 +38,10 @@ public class GallerySectionView : MonoBehaviour, IProjectSectionView
     // State for dashboard viewer
     private List<string> dashboardImagePaths = new List<string>();
     private int currentDashboardIndex = -1;
-    private Texture2D currentDashboardTexture;
-    private Sprite currentDashboardSprite; // Track sprite to prevent memory leaks
+    private Texture2D currentDashboardTexture; // Only tracking raw texture now!
 
     private void Awake()
     {
-        // Bind the new dashboard buttons via code to ensure they always work
         if (dashboardNextButton != null) dashboardNextButton.onClick.AddListener(DashboardNextImage);
         if (dashboardPrevButton != null) dashboardPrevButton.onClick.AddListener(DashboardPrevImage);
         if (dashboardCloseButton != null) dashboardCloseButton.onClick.AddListener(CloseDashboardViewer);
@@ -93,12 +85,10 @@ public class GallerySectionView : MonoBehaviour, IProjectSectionView
             imageBtnUI.Initialize(this, galleryData.imageURL, fullFolderPath);
             imageObj.gameObject.name = $"Image {count}";
 
-            // Fire image load instantly without awaiting it to unblock the loop
             _ = imageBtnUI.LoadImageButton();
 
             count++;
 
-            // TIME-SLICING: Every 3 buttons instantiated, yield a frame to let Canvas Layout breathe
             if (count % 3 == 0)
             {
                 await Task.Yield();
@@ -109,8 +99,8 @@ public class GallerySectionView : MonoBehaviour, IProjectSectionView
         {
             int calculatedStart = generatedRects.Count / 2;
 
-            carousel.StartItem = calculatedStart;  
-            carousel.SetItems(generatedRects); 
+            carousel.StartItem = calculatedStart;
+            carousel.SetItems(generatedRects);
             carousel.ForceUpdate();
         }
     }
@@ -131,69 +121,16 @@ public class GallerySectionView : MonoBehaviour, IProjectSectionView
             await Task.WhenAll(batch);
             await Task.Delay(1);
         }
-        
     }
 
-    /*    public void ShowPhotoOnMainImageRect(string imageURL, string titleText)
-        {
-            if (backButton != null)
-            {
-                backButton.gameObject.SetActive(false);
-            }
-
-            popupPanel.SetActive(true);
-            string fullFolderPath = $"{projectContext.PanelFolderId}/{projectContext.ProjectFolderId}";
-            *//*imagecaption.text = titleText;*//*
-            Helpers.ImageHelper.LoadAndApplyImageAsync(fullFolderPath, imageURL, imageView);
-
-            currentImageIndex = validGalleryList.FindIndex(x => x.imageURL == imageURL);
-            UpdateButtonStates();
-        }*/
-    /*
-        public void ShowNextImage()
-        {
-            if (currentImageIndex >= 0 && currentImageIndex < validGalleryList.Count - 1)
-            {
-                currentImageIndex++;
-                GalleryData data = validGalleryList[currentImageIndex];
-                ShowPhotoOnMainImageRect(data.imageURL, data.titleText);
-            }
-        }
-
-        public void ShowPreviousImage()
-        {
-            if (currentImageIndex > 0)
-            {
-                currentImageIndex--;
-                GalleryData data = validGalleryList[currentImageIndex];
-                ShowPhotoOnMainImageRect(data.imageURL, data.titleText);
-            }
-        }
-
-        private void UpdateButtonStates()
-        {
-            if (nextButton != null)
-            {
-                bool hasNext = (currentImageIndex >= 0 && currentImageIndex < validGalleryList.Count - 1);
-                nextButton.gameObject.SetActive(hasNext);
-            }
-
-            if (prevButton != null)
-            {
-                bool hasPrev = (currentImageIndex > 0);
-                prevButton.gameObject.SetActive(hasPrev);
-            }
-        }*/
-
     // =========================================================
-    // --- NEW DASHBOARD VIEWER LOGIC ---
+    // --- UPDATED DASHBOARD VIEWER LOGIC (RAW IMAGE) ---
     // =========================================================
     public void OpenDashboardViewer()
     {
         dashboardViewerPanel.SetActive(true);
         dashboardImagePaths.Clear();
 
-        // Target path: StreamingAssets/PanelFolderID/Dashboard/
         string dashboardDirectory = Path.Combine(
             Application.streamingAssetsPath,
             projectID,
@@ -226,48 +163,45 @@ public class GallerySectionView : MonoBehaviour, IProjectSectionView
         else
         {
             Debug.LogWarning("[Dashboard Viewer] No valid images found in Dashboard folder.");
-            if (dashboardImageView != null) dashboardImageView.sprite = null;
+            if (dashboardRawImage != null) dashboardRawImage.texture = null;
             UpdateDashboardButtons();
         }
     }
 
     private void DisplayDashboardImage(int index)
     {
-        if (index < 0 || index >= dashboardImagePaths.Count || dashboardImageView == null) return;
+        if (index < 0 || index >= dashboardImagePaths.Count || dashboardRawImage == null) return;
 
         string imagePath = dashboardImagePaths[index];
 
         if (File.Exists(imagePath))
         {
-            // CRITICAL: Destroy both the old sprite AND the old texture to prevent memory leaks
-            if (currentDashboardSprite != null) Destroy(currentDashboardSprite);
+            // Destroy old texture to prevent memory leaks
             if (currentDashboardTexture != null) Destroy(currentDashboardTexture);
 
-            // 1. Load the raw bytes into a Texture2D
+            // 1. Load the raw bytes directly into Texture2D (Zero Sprite CPU overhead!)
             byte[] fileData = File.ReadAllBytes(imagePath);
             currentDashboardTexture = new Texture2D(2, 2);
             currentDashboardTexture.LoadImage(fileData);
 
-            // 2. Convert the Texture2D into a UI Sprite
-            currentDashboardSprite = Sprite.Create(
-                currentDashboardTexture,
-                new Rect(0, 0, currentDashboardTexture.width, currentDashboardTexture.height),
-                new Vector2(0.5f, 0.5f) // Centers the pivot
-            );
+            // 2. Assign directly to RawImage
+            dashboardRawImage.texture = currentDashboardTexture;
 
-            // 3. Assign to the Image component
-            dashboardImageView.sprite = currentDashboardSprite;
-            dashboardImageView.preserveAspect = true;
-
-            // --- STRICT ASPECT RATIO FITTER ---
-            // This guarantees the image scales properly inside its parent bounds without stretching
-            AspectRatioFitter aspectFitter = dashboardImageView.GetComponent<AspectRatioFitter>();
+            // 3. Strict Aspect Ratio Fitter
+            AspectRatioFitter aspectFitter = dashboardRawImage.GetComponent<AspectRatioFitter>();
             if (aspectFitter == null)
             {
-                aspectFitter = dashboardImageView.gameObject.AddComponent<AspectRatioFitter>();
+                aspectFitter = dashboardRawImage.gameObject.AddComponent<AspectRatioFitter>();
             }
             aspectFitter.aspectMode = AspectRatioFitter.AspectMode.FitInParent;
             aspectFitter.aspectRatio = (float)currentDashboardTexture.width / currentDashboardTexture.height;
+
+            // 4. Center and Anchor properly (Ported from Report viewer)
+            RectTransform rawImageRect = dashboardRawImage.GetComponent<RectTransform>();
+            rawImageRect.pivot = new Vector2(0.5f, 0.5f);
+            rawImageRect.anchorMin = new Vector2(0.5f, 0.5f);
+            rawImageRect.anchorMax = new Vector2(0.5f, 0.5f);
+            rawImageRect.anchoredPosition = Vector2.zero;
         }
 
         UpdateDashboardButtons();
@@ -275,7 +209,6 @@ public class GallerySectionView : MonoBehaviour, IProjectSectionView
 
     private void DashboardNextImage()
     {
-        // SAFETY CHECK: Only proceed if THIS specific dashboard panel is actually open
         if (dashboardViewerPanel == null || !dashboardViewerPanel.activeSelf) return;
 
         if (currentDashboardIndex < dashboardImagePaths.Count - 1)
@@ -287,7 +220,6 @@ public class GallerySectionView : MonoBehaviour, IProjectSectionView
 
     private void DashboardPrevImage()
     {
-        // SAFETY CHECK: Only proceed if THIS specific dashboard panel is actually open
         if (dashboardViewerPanel == null || !dashboardViewerPanel.activeSelf) return;
 
         if (currentDashboardIndex > 0)
@@ -308,17 +240,13 @@ public class GallerySectionView : MonoBehaviour, IProjectSectionView
 
     private void CloseDashboardViewer()
     {
-        // SAFETY CHECK: Only close and clean up if THIS specific panel is the open one
         if (dashboardViewerPanel == null || !dashboardViewerPanel.activeSelf) return;
 
         dashboardViewerPanel.SetActive(false);
         currentDashboardIndex = -1;
 
-        // Clean up both texture and sprite
-        if (currentDashboardSprite != null) Destroy(currentDashboardSprite);
         if (currentDashboardTexture != null) Destroy(currentDashboardTexture);
-
-        if (dashboardImageView != null) dashboardImageView.sprite = null;
+        if (dashboardRawImage != null) dashboardRawImage.texture = null;
     }
 
     // =========================================================
@@ -340,11 +268,9 @@ public class GallerySectionView : MonoBehaviour, IProjectSectionView
         popupPanel.SetActive(false);
         currentImageIndex = -1;
 
-        // Force close without active check when exiting the entire UI section
         if (dashboardViewerPanel != null) dashboardViewerPanel.SetActive(false);
-        if (currentDashboardSprite != null) Destroy(currentDashboardSprite);
         if (currentDashboardTexture != null) Destroy(currentDashboardTexture);
-        if (dashboardImageView != null) dashboardImageView.sprite = null;
+        if (dashboardRawImage != null) dashboardRawImage.texture = null;
     }
 
     public void ValidateData(ProjectContext projectContext)
@@ -372,7 +298,6 @@ public class GallerySectionView : MonoBehaviour, IProjectSectionView
                 }
             }
 
-            //StartGalleryPreload(projectContext);
             TabButton.SetActive(shouldShowTab);
         }
     }
@@ -388,7 +313,6 @@ public class GallerySectionView : MonoBehaviour, IProjectSectionView
         {
             if (!IsGalleryDataValid(galleryData)) continue;
 
-            // Shove into the background queue; do not sit here and await it!
             _ = Helpers.ImageHelper.PreloadImageAsync(fullFolderPath, galleryData.imageURL);
         }
     }
@@ -404,8 +328,6 @@ public class GallerySectionView : MonoBehaviour, IProjectSectionView
 
     private void OnDestroy()
     {
-        // Clean up loaded dashboard texture to avoid memory leaks
-        if (currentDashboardSprite != null) Destroy(currentDashboardSprite);
         if (currentDashboardTexture != null) Destroy(currentDashboardTexture);
     }
 }
