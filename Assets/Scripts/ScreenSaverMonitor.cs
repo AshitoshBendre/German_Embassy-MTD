@@ -10,6 +10,7 @@ public class ScreenSaverConfig
 
 public class ScreenSaverMonitor : MonoBehaviour
 {
+    public static ScreenSaverMonitor Instance;
     [Header("Settings")]
     public float idleTimeout = 15f;
     public string configFileName = "ScreenSaverConfig.json";
@@ -25,6 +26,13 @@ public class ScreenSaverMonitor : MonoBehaviour
     // Track the active coroutine from the GlobalTimer so we can stop/reset it
     private Coroutine _idleTimerCoroutine;
 
+    private void Awake()
+    {
+        if(Instance == null)
+        {
+            Instance = this;
+        }
+    }
     private void Start()
     {
         LoadConfig();

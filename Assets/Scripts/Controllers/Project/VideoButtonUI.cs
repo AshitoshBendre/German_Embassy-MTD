@@ -43,7 +43,7 @@ public class VideoButtonUI : MonoBehaviour
     public void OnClick()
     {
         if (string.IsNullOrWhiteSpace(videoURL) || sectionView == null) return;
-
+        ScreenSaverMonitor.Instance.SetMediaPlayingState(true);
         sectionView.ShowVideoOnMainRectRawImage(videoURL, titleText);
     }
 }
