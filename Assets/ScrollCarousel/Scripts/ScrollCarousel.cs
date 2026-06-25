@@ -48,6 +48,7 @@ namespace ScrollCarousel
         private Vector2 _totalDragDelta;
         private Dictionary<RectTransform, Coroutine> _activeColorAnimations = new();
         private List<(RectTransform item, float distance)> _depthSortBuffer = new();
+        public int CurrentClosestIndex { get; private set; }
 
         private void Awake() { if (_rectTransform == null) _rectTransform = GetComponent<RectTransform>(); }
         private void OnEnable() { if (Items != null && Items.Count > 0) ForceUpdate(); }
@@ -162,6 +163,8 @@ namespace ScrollCarousel
                     closestIdx = i;
                 }
             }
+
+            CurrentClosestIndex = closestIdx;
 
             // 2. Find which of its two immediate side-kicks is the "second closest" (Neighbor B)
             int secondClosestIdx = closestIdx;
@@ -289,9 +292,9 @@ namespace ScrollCarousel
             }
             else if (Mode == CarouselMode.Vertical)
             {
-                if (_totalDragDelta.y > _swipeThreshold) GoToNext();
+                /*if (_totalDragDelta.y > _swipeThreshold) GoToNext();
                 else if (_totalDragDelta.y < -_swipeThreshold) GoToPrevious();
-                else FocusItem(_currentItemIndex);
+                else*/ FocusItem(CurrentClosestIndex);
             }
             else
             {

@@ -15,7 +15,12 @@ public class ScreenSaverMonitor : MonoBehaviour
     public string configFileName = "ScreenSaverConfig.json";
 
     private Vector3 _lastMousePosition;
-    public bool _isMediaPlaying = false;
+
+    // CHANGED: We now track HOW MANY videos are playing, not just a true/false toggle.
+    [SerializeField] private int _activeMediaCount = 0;
+
+    // Helper property to easily check if ANY media is playing
+    public bool IsMediaPlaying => _activeMediaCount > 0;
 
     // Track the active coroutine from the GlobalTimer so we can stop/reset it
     private Coroutine _idleTimerCoroutine;
@@ -59,8 +64,8 @@ public class ScreenSaverMonitor : MonoBehaviour
 
     private void Update()
     {
-        // If media is playing, ignore all idle logic completely
-        if (_isMediaPlaying) return;
+        // Use the new property. If any media is playing, ignore all idle logic.
+        if (IsMediaPlaying) return;
 
         // If the user moves the mouse or clicks, reset the timer
         if (DetectGlobalInput())
@@ -94,7 +99,7 @@ public class ScreenSaverMonitor : MonoBehaviour
         }
 
         // 2. Start a fresh timer. If it reaches the end, it will trigger RestartCurrentScene
-        if (!_isMediaPlaying)
+        if (!IsMediaPlaying)
         {
             _idleTimerCoroutine = GlobalTimer.Start(idleTimeout, RestartCurrentScene);
         }
@@ -102,16 +107,27 @@ public class ScreenSaverMonitor : MonoBehaviour
 
     public void SetMediaPlayingState(bool isPlaying)
     {
-        _isMediaPlaying = isPlaying;
-
-        if (!isPlaying)
+        if (isPlaying)
         {
-            // Media stopped, start tracking idle time again
+            _activeMediaCount++; // A video started, increase the count
+        }
+        else
+        {
+            _activeMediaCount--; // A video stopped, decrease the count
+
+            // Clamp it at 0 just to be safe, preventing negative numbers 
+            // if a player accidentally calls stop twice.
+            if (_activeMediaCount < 0) _activeMediaCount = 0;
+        }
+
+        if (!IsMediaPlaying)
+        {
+            // The count has hit 0. ALL media has stopped. Start tracking idle time again.
             WakeUp();
         }
         else
         {
-            // Media started, stop the idle timer so it doesn't trigger in the background
+            // At least 1 video is still playing, stop the idle timer so it doesn't trigger.
             if (_idleTimerCoroutine != null)
             {
                 GlobalTimer.Stop(_idleTimerCoroutine);

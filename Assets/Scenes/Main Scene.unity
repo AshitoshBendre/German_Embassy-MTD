@@ -2338,7 +2338,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   idleTimeout: 120
   configFileName: ScreenSaverConfig.json
-  _isMediaPlaying: 0
+  _activeMediaCount: 0
 --- !u!1 &148096531
 GameObject:
   m_ObjectHideFlags: 0
@@ -3352,7 +3352,19 @@ MonoBehaviour:
       m_Calls: []
   onVideoFinishedEvent:
     m_PersistentCalls:
-      m_Calls: []
+      m_Calls:
+      - m_Target: {fileID: 727568849}
+        m_TargetAssemblyTypeName: ButtonExtension, Assembly-CSharp
+        m_MethodName: TriggerClick
+        m_Mode: 2
+        m_Arguments:
+          m_ObjectArgument: {fileID: 1472739119}
+          m_ObjectArgumentAssemblyTypeName: UnityEngine.UI.Button, UnityEngine.UI
+          m_IntArgument: 0
+          m_FloatArgument: 0
+          m_StringArgument: 
+          m_BoolArgument: 0
+        m_CallState: 2
 --- !u!114 &201761717
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -4774,7 +4786,19 @@ MonoBehaviour:
       m_Calls: []
   onVideoFinishedEvent:
     m_PersistentCalls:
-      m_Calls: []
+      m_Calls:
+      - m_Target: {fileID: 727568849}
+        m_TargetAssemblyTypeName: ButtonExtension, Assembly-CSharp
+        m_MethodName: TriggerClick
+        m_Mode: 2
+        m_Arguments:
+          m_ObjectArgument: {fileID: 852597738}
+          m_ObjectArgumentAssemblyTypeName: UnityEngine.UI.Button, UnityEngine.UI
+          m_IntArgument: 0
+          m_FloatArgument: 0
+          m_StringArgument: 
+          m_BoolArgument: 0
+        m_CallState: 2
 --- !u!114 &280178856
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -13353,7 +13377,19 @@ MonoBehaviour:
       m_Calls: []
   onVideoFinishedEvent:
     m_PersistentCalls:
-      m_Calls: []
+      m_Calls:
+      - m_Target: {fileID: 727568849}
+        m_TargetAssemblyTypeName: ButtonExtension, Assembly-CSharp
+        m_MethodName: TriggerClick
+        m_Mode: 2
+        m_Arguments:
+          m_ObjectArgument: {fileID: 406602957}
+          m_ObjectArgumentAssemblyTypeName: UnityEngine.UI.Button, UnityEngine.UI
+          m_IntArgument: 0
+          m_FloatArgument: 0
+          m_StringArgument: 
+          m_BoolArgument: 0
+        m_CallState: 2
 --- !u!114 &690344189
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -14129,6 +14165,50 @@ CanvasRenderer:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 725494995}
   m_CullTransparentMesh: 1
+--- !u!1 &727568848
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 727568850}
+  - component: {fileID: 727568849}
+  m_Layer: 0
+  m_Name: Button Extension
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
+--- !u!114 &727568849
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 727568848}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 9cd4d1bbb61edae499d63793bb4761fd, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::ButtonExtension
+--- !u!4 &727568850
+Transform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 727568848}
+  serializedVersion: 2
+  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
+  m_LocalPosition: {x: 455.17715, y: 1461.0159, z: 6.256156}
+  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_ConstrainProportionsScale: 0
+  m_Children: []
+  m_Father: {fileID: 0}
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!1 &727789744
 GameObject:
   m_ObjectHideFlags: 0
@@ -18377,7 +18457,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   idleTimeout: 20
   configFileName: ScreenSaverConfig.json
-  _isMediaPlaying: 0
+  _activeMediaCount: 0
 --- !u!1 &938351906
 GameObject:
   m_ObjectHideFlags: 0
@@ -40793,7 +40873,19 @@ MonoBehaviour:
       m_Calls: []
   onVideoFinishedEvent:
     m_PersistentCalls:
-      m_Calls: []
+      m_Calls:
+      - m_Target: {fileID: 727568849}
+        m_TargetAssemblyTypeName: ButtonExtension, Assembly-CSharp
+        m_MethodName: TriggerClick
+        m_Mode: 2
+        m_Arguments:
+          m_ObjectArgument: {fileID: 793306368}
+          m_ObjectArgumentAssemblyTypeName: UnityEngine.UI.Button, UnityEngine.UI
+          m_IntArgument: 0
+          m_FloatArgument: 0
+          m_StringArgument: 
+          m_BoolArgument: 0
+        m_CallState: 2
 --- !u!114 &2061662420
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -44976,3 +45068,4 @@ SceneRoots:
   - {fileID: 1424779600}
   - {fileID: 1914017417}
   - {fileID: 147551346}
+  - {fileID: 727568850}
