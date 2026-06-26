@@ -43836,7 +43836,7 @@ MonoBehaviour:
   Items: []
   StartItem: 0
   Itemspacing: 30
-  CenteredScale: 1
+  CenteredScale: 1.2
   MaxNonCenteredScale: 0.7
   MinNonCenteredScale: 0.1
   FalloffSlotCount: 3
@@ -44629,7 +44629,7 @@ MonoBehaviour:
   Items: []
   StartItem: 0
   Itemspacing: 30
-  CenteredScale: 1
+  CenteredScale: 1.2
   MaxNonCenteredScale: 0.7
   MinNonCenteredScale: 0.1
   FalloffSlotCount: 3
@@ -44909,7 +44909,7 @@ MonoBehaviour:
   Items: []
   StartItem: 0
   Itemspacing: 30
-  CenteredScale: 1
+  CenteredScale: 1.2
   MaxNonCenteredScale: 0.7
   MinNonCenteredScale: 0.1
   FalloffSlotCount: 3
